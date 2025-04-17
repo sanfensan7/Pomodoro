@@ -1,0 +1,202 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx;
+  background-color: #fff;
+  min-height: 100vh;
+  --theme-color: #ff6b6b;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 60rpx;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.settings-icon {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.settings-icon image {
+  width: 100%;
+  height: 100%;
+}
+
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 60rpx;
+  width: 100%;
+}
+
+/* 环形计时器样式 */
+.timer-circle {
+  width: 300rpx;
+  height: 300rpx;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.progress-ring {
+  width: 300rpx;
+  height: 300rpx;
+  position: absolute;
+}
+
+.timer-background {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: inset 0 0 20rpx rgba(0, 0, 0, 0.05);
+  z-index: 1;
+}
+
+/* 直线计时器样式 */
+.timer-line {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.progress-line {
+  width: 100%;
+  height: 30rpx;
+  margin-top: 30rpx;
+  border-radius: 15rpx;
+  overflow: hidden;
+}
+
+/* 极简计时器样式 */
+.timer-minimal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+/* 通用计时器文本样式 */
+.timer-display {
+  font-size: 96rpx;
+  font-weight: 700;
+  z-index: 2;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+  position: relative;
+  color: var(--theme-color);
+}
+
+.timer-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 10rpx;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 60rpx;
+  gap: 40rpx;
+}
+
+.btn-reset, .btn-start, .btn-pause {
+  width: 90rpx;
+  height: 90rpx;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-start, .btn-pause {
+  width: 120rpx;
+  height: 120rpx;
+  background-color: var(--theme-color);
+}
+
+.btn-reset:active, .btn-start:active, .btn-pause:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.btn-reset image, .btn-start image, .btn-pause image {
+  width: 45%;
+  height: 45%;
+}
+
+.btn-start image, .btn-pause image {
+  width: 50%;
+  height: 50%;
+  filter: brightness(0) invert(1);
+}
+
+.mode-tabs {
+  display: flex;
+  width: 100%;
+  background-color: #f5f5f5;
+  border-radius: 16rpx;
+  margin-bottom: 60rpx;
+  overflow: hidden;
+  padding: 6rpx;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  transition: all 0.3s ease;
+  border-radius: 12rpx;
+  margin: 0 4rpx;
+}
+
+.tab.active {
+  color: white;
+  background-color: var(--theme-color);
+}
+
+.stats-summary {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--theme-color);
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+} 

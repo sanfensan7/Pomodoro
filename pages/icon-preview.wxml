@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="title">图标预览</view>
+  
+  <view class="icon-list">
+    <view class="icon-item">
+      <image src="images/clock.png" mode="aspectFit"></image>
+      <text>clock.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/clock-active.png" mode="aspectFit"></image>
+      <text>clock-active.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/task.png" mode="aspectFit"></image>
+      <text>task.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/task-active.png" mode="aspectFit"></image>
+      <text>task-active.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/stats.png" mode="aspectFit"></image>
+      <text>stats.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/stats-active.png" mode="aspectFit"></image>
+      <text>stats-active.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/settings.png" mode="aspectFit"></image>
+      <text>settings.png</text>
+    </view>
+    <view class="icon-item">
+      <image src="images/settings-active.png" mode="aspectFit"></image>
+      <text>settings-active.png</text>
+    </view>
+  </view>
+  
+  <view class="tip">如果图标显示正常，说明自动生成图标成功</view>
+  
+  <button class="regenerate-btn" bindtap="regenerateIcons" style="background-color: #ff6b6b; color: #fff;">重新生成图标</button>
+</view> 

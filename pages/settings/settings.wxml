@@ -1,0 +1,139 @@
+<view class="container" style="--theme-color: {{themeColor}}; --theme-color-rgb: {{themeColorRGB}};">
+  <view class="header">
+    <navigator url="/pages/focus/focus" open-type="navigate" hover-class="none">
+      <view class="back-icon">
+        <image src="/images/back.png" mode="aspectFit"></image>
+      </view>
+    </navigator>
+    <text class="title">设置</text>
+  </view>
+  
+  <view class="settings-group">
+    <view class="settings-title">时间设置</view>
+    
+    <view class="settings-item">
+      <view class="item-label">专注时长</view>
+      <view class="item-value">
+        <picker bindchange="changeFocusDuration" value="{{focusDurationIndex}}" range="{{durationOptions}}">
+          <view class="picker">{{durationOptions[focusDurationIndex]}} 分钟</view>
+        </picker>
+      </view>
+    </view>
+    
+    <view class="settings-item">
+      <view class="item-label">短休息时长</view>
+      <view class="item-value">
+        <picker bindchange="changeShortBreakDuration" value="{{shortBreakDurationIndex}}" range="{{breakOptions}}">
+          <view class="picker">{{breakOptions[shortBreakDurationIndex]}} 分钟</view>
+        </picker>
+      </view>
+    </view>
+    
+    <view class="settings-item">
+      <view class="item-label">长休息时长</view>
+      <view class="item-value">
+        <picker bindchange="changeLongBreakDuration" value="{{longBreakDurationIndex}}" range="{{breakOptions}}">
+          <view class="picker">{{breakOptions[longBreakDurationIndex]}} 分钟</view>
+        </picker>
+      </view>
+    </view>
+    
+    <view class="settings-item">
+      <view class="item-label">长休息间隔</view>
+      <view class="item-value">
+        <picker bindchange="changeLongBreakInterval" value="{{longBreakIntervalIndex}}" range="{{intervalOptions}}">
+          <view class="picker">{{intervalOptions[longBreakIntervalIndex]}} 个专注</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+  
+  <view class="settings-group">
+    <view class="settings-title">自动化设置</view>
+    
+    <view class="settings-item">
+      <view class="item-label">自动开始休息</view>
+      <view class="item-value">
+        <switch checked="{{autoStartBreak}}" bindchange="toggleAutoStartBreak" color="{{themeColor}}"/>
+      </view>
+    </view>
+    
+    <view class="settings-item">
+      <view class="item-label">休息后自动开始专注</view>
+      <view class="item-value">
+        <switch checked="{{autoStartFocus}}" bindchange="toggleAutoStartFocus" color="{{themeColor}}"/>
+      </view>
+    </view>
+  </view>
+  
+  <view class="settings-group">
+    <view class="settings-title">主题设置</view>
+    
+    <view class="theme-options">
+      <view class="theme-option {{currentTheme === 'red' ? 'active' : ''}}" 
+            style="background-color: #ff6b6b;" 
+            data-color="#ff6b6b" 
+            data-theme="red" 
+            bindtap="changeTheme"></view>
+      <view class="theme-option {{currentTheme === 'blue' ? 'active' : ''}}" 
+            style="background-color: #5b87fa;" 
+            data-color="#5b87fa" 
+            data-theme="blue" 
+            bindtap="changeTheme"></view>
+      <view class="theme-option {{currentTheme === 'green' ? 'active' : ''}}" 
+            style="background-color: #4acf50;" 
+            data-color="#4acf50" 
+            data-theme="green" 
+            bindtap="changeTheme"></view>
+      <view class="theme-option {{currentTheme === 'purple' ? 'active' : ''}}" 
+            style="background-color: #9d54bb;" 
+            data-color="#9d54bb" 
+            data-theme="purple" 
+            bindtap="changeTheme"></view>
+      <view class="theme-option {{currentTheme === 'orange' ? 'active' : ''}}" 
+            style="background-color: #ff9b21;" 
+            data-color="#ff9b21" 
+            data-theme="orange" 
+            bindtap="changeTheme"></view>
+    </view>
+  </view>
+  
+  <view class="settings-group">
+    <view class="settings-title">计时器样式</view>
+    
+    <view class="timer-style-options">
+      <view class="timer-style {{timerStyle === 'circle' ? 'active' : ''}}" 
+            style="border-color: {{timerStyle === 'circle' ? themeColor : '#ddd'}}"
+            data-style="circle" 
+            bindtap="changeTimerStyle">
+        <view class="timer-style-circle" style="border-color: {{themeColor}}; background-color: {{timerStyle === 'circle' ? themeColor : '#fff'}}"></view>
+        <view class="timer-style-label">环形</view>
+      </view>
+      <view class="timer-style {{timerStyle === 'line' ? 'active' : ''}}" 
+            style="border-color: {{timerStyle === 'line' ? themeColor : '#ddd'}}"
+            data-style="line" 
+            bindtap="changeTimerStyle">
+        <view class="timer-style-line" style="background-color: {{timerStyle === 'line' ? themeColor : '#ddd'}}"></view>
+        <view class="timer-style-label">直线</view>
+      </view>
+      <view class="timer-style {{timerStyle === 'minimal' ? 'active' : ''}}" 
+            style="border-color: {{timerStyle === 'minimal' ? themeColor : '#ddd'}}"
+            data-style="minimal" 
+            bindtap="changeTimerStyle">
+        <view class="timer-style-minimal" style="color: {{timerStyle === 'minimal' ? themeColor : '#999'}}">25:00</view>
+        <view class="timer-style-label">极简</view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="settings-group">
+    <view class="settings-title">关于</view>
+    
+    <view class="settings-item">
+      <view class="item-label">版本</view>
+      <view class="item-value">1.0.0</view>
+    </view>
+    
+    <button class="feedback-btn" open-type="feedback">意见反馈</button>
+  </view>
+</view> 

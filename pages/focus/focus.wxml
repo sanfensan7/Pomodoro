@@ -1,0 +1,62 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <view class="header">
+    <view class="settings-icon" bindtap="navigateToSettings">
+      <image src="/images/settings.png" mode="aspectFit"></image>
+    </view>
+  </view>
+  
+  <view class="timer-container">
+    <!-- 环形计时器 -->
+    <view class="timer-circle" wx:if="{{timerStyle === 'circle'}}">
+      <canvas type="2d" id="progressRing" class="progress-ring"></canvas>
+      <view class="timer-background"></view>
+      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+    </view>
+    
+    <!-- 直线计时器 -->
+    <view class="timer-line" wx:elif="{{timerStyle === 'line'}}">
+      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+      <canvas type="2d" id="progressLine" class="progress-line"></canvas>
+    </view>
+    
+    <!-- 极简计时器 -->
+    <view class="timer-minimal" wx:elif="{{timerStyle === 'minimal'}}">
+      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+    </view>
+    
+    <view class="timer-label">{{timerLabel}}</view>
+  </view>
+  
+  <view class="controls">
+    <view class="btn-reset" bindtap="resetTimer">
+      <image src="/images/reset.png" mode="aspectFit"></image>
+    </view>
+    <view class="{{isRunning ? 'btn-pause' : 'btn-start'}}" bindtap="toggleTimer">
+      <image src="{{isRunning ? '/images/pause.png' : '/images/play.png'}}" mode="aspectFit"></image>
+    </view>
+  </view>
+  
+  <view class="mode-tabs">
+    <view class="tab {{currentMode === 'focus' ? 'active' : ''}}" 
+          data-mode="focus" bindtap="switchMode">专注</view>
+    <view class="tab {{currentMode === 'shortBreak' ? 'active' : ''}}" 
+          data-mode="shortBreak" bindtap="switchMode">短休息</view>
+    <view class="tab {{currentMode === 'longBreak' ? 'active' : ''}}" 
+          data-mode="longBreak" bindtap="switchMode">长休息</view>
+  </view>
+  
+  <view class="stats-summary">
+    <view class="stat-item">
+      <text class="stat-value">{{todayCompleted}}</text>
+      <text class="stat-label">今日完成</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{todayFocusTime}}</text>
+      <text class="stat-label">专注时长</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{weekCompleted}}</text>
+      <text class="stat-label">本周完成</text>
+    </view>
+  </view>
+</view> 

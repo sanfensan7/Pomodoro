@@ -1,0 +1,68 @@
+<view class="container">
+  <view class="header">
+    <navigator url="/pages/focus/focus" open-type="navigate" hover-class="none">
+      <view class="back-icon">
+        <image src="/images/back.png" mode="aspectFit"></image>
+      </view>
+    </navigator>
+    <text class="title">统计</text>
+  </view>
+  
+  <view class="period-tabs">
+    <view class="period-tab {{period === 'day' ? 'active' : ''}}" 
+          style="{{period === 'day' ? 'background-color:' + themeColor : ''}}"
+          data-period="day" bindtap="switchPeriod">日</view>
+    <view class="period-tab {{period === 'week' ? 'active' : ''}}" 
+          style="{{period === 'week' ? 'background-color:' + themeColor : ''}}"
+          data-period="week" bindtap="switchPeriod">周</view>
+    <view class="period-tab {{period === 'month' ? 'active' : ''}}" 
+          style="{{period === 'month' ? 'background-color:' + themeColor : ''}}"
+          data-period="month" bindtap="switchPeriod">月</view>
+  </view>
+  
+  <view class="chart-container">
+    <view class="chart">
+      <view class="chart-bars">
+        <block wx:for="{{chartData.labels}}" wx:key="index">
+          <view class="chart-bar-container">
+            <view class="chart-bar" style="height: {{chartData.heights[index]}}rpx; background-color: {{themeColor}}"></view>
+            <view class="chart-label">{{item}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+  
+  <view class="stats-summary">
+    <view class="summary-item">
+      <view class="summary-label">
+        <block wx:if="{{period === 'day'}}">今日专注次数：</block>
+        <block wx:elif="{{period === 'week'}}">本周专注次数：</block>
+        <block wx:else>本月专注次数：</block>
+      </view>
+      <view class="summary-value">{{currentStats.count}}</view>
+    </view>
+    
+    <view class="summary-item">
+      <view class="summary-label">
+        <block wx:if="{{period === 'day'}}">今日专注时长：</block>
+        <block wx:elif="{{period === 'week'}}">本周专注时长：</block>
+        <block wx:else>本月专注时长：</block>
+      </view>
+      <view class="summary-value">{{currentStats.duration}}</view>
+    </view>
+    
+    <view class="summary-item">
+      <view class="summary-label">
+        <block wx:if="{{period === 'day'}}">平均每小时：</block>
+        <block wx:else>平均每日：</block>
+      </view>
+      <view class="summary-value">{{currentStats.average}}</view>
+    </view>
+    
+    <view class="summary-item">
+      <view class="summary-label">最长连续专注：</view>
+      <view class="summary-value">{{currentStats.longest}}</view>
+    </view>
+  </view>
+</view> 

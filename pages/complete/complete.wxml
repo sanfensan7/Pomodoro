@@ -1,0 +1,47 @@
+<view class="container">
+  <view class="celebration">
+    <view class="celebration-emoji">🎉</view>
+    <view class="celebration-text">专注完成！</view>
+    <view class="sub-text">你已完成一个专注周期</view>
+  </view>
+  
+  <view class="stats">
+    <view class="stat-item">
+      <text class="stat-value">{{focusDuration}}</text>
+      <text class="stat-label">专注时长</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-value">{{todayCompleted}}</text>
+      <text class="stat-label">今日完成</text>
+    </view>
+  </view>
+  
+  <view class="break-suggestion">
+    <view class="suggestion-title">休息建议</view>
+    <view class="suggestion-items">
+      <view class="suggestion-item">
+        <view class="suggestion-icon">
+          <text class="suggestion-emoji">🧘</text>
+        </view>
+        <view class="suggestion-text">适当伸展身体</view>
+      </view>
+      <view class="suggestion-item">
+        <view class="suggestion-icon">
+          <text class="suggestion-emoji">💧</text>
+        </view>
+        <view class="suggestion-text">补充一杯水</view>
+      </view>
+      <view class="suggestion-item">
+        <view class="suggestion-icon">
+          <text class="suggestion-emoji">👁️</text>
+        </view>
+        <view class="suggestion-text">闭眼休息一会</view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="action-buttons">
+    <button class="btn-primary" bindtap="startBreak" style="background-color: {{themeColor}}">开始休息</button>
+    <button class="btn-secondary" bindtap="backToFocus">返回专注</button>
+  </view>
+</view> 

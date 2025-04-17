@@ -1,0 +1,62 @@
+<view class="container">
+  <view class="header">
+    <text class="title">任务管理</text>
+    <view class="add-icon" bindtap="toggleTaskForm">
+      <text>+</text>
+    </view>
+  </view>
+  
+  <view class="task-list">
+    <block wx:for="{{tasks}}" wx:key="id">
+      <view class="task-item {{item.completed ? 'completed' : ''}}">
+        <view class="task-checkbox {{item.completed ? 'completed' : ''}}" 
+              style="border-color: {{themeColor}}; {{item.completed ? 'background-color:' + themeColor : ''}}"
+              data-id="{{item.id}}" bindtap="toggleTaskStatus">
+          <icon wx:if="{{item.completed}}" type="success" size="16" color="#fff"></icon>
+        </view>
+        <view class="task-content" bindtap="startFocus" data-task="{{item}}">
+          <view class="task-title">{{item.title}}</view>
+          <view class="task-description">{{item.description}}</view>
+          <view class="task-progress">
+            <view class="progress-text">完成进度：{{item.completedCount}}/{{item.totalCount}}</view>
+            <view class="start-focus" style="color: {{themeColor}}">
+              <image src="/images/play.png" mode="aspectFit"></image>
+              <text>开始专注</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+    
+    <view class="add-task-btn" bindtap="toggleTaskForm">
+      <text>+ 添加新任务</text>
+    </view>
+  </view>
+  
+  <!-- 添加任务表单 -->
+  <view class="task-form {{showTaskForm ? 'show' : ''}}">
+    <view class="form-header">
+      <text>新任务</text>
+      <view class="close-btn" bindtap="toggleTaskForm">×</view>
+    </view>
+    <view class="form-group">
+      <text class="form-label">任务名称</text>
+      <input class="form-input" value="{{newTask.title}}" bindinput="inputTaskTitle" placeholder="输入任务名称" />
+    </view>
+    <view class="form-group">
+      <text class="form-label">任务描述</text>
+      <textarea class="form-textarea" value="{{newTask.description}}" bindinput="inputTaskDescription" placeholder="输入任务描述"></textarea>
+    </view>
+    <view class="form-group">
+      <text class="form-label">预计番茄数</text>
+      <slider min="1" max="10" value="{{newTask.totalCount}}" bindchange="changeTaskCount" show-value />
+    </view>
+    <view class="form-actions">
+      <button class="btn-cancel" bindtap="toggleTaskForm">取消</button>
+      <button class="btn-submit" style="background-color: {{themeColor}}" bindtap="addTask">添加</button>
+    </view>
+  </view>
+  
+  <!-- 遮罩层 -->
+  <view class="mask" wx:if="{{showTaskForm}}" bindtap="toggleTaskForm"></view>
+</view> 
