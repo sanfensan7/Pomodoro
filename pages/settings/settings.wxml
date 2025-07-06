@@ -70,27 +70,45 @@
     <view class="settings-title">提醒设置</view>
 
     <view class="settings-item">
-      <view class="item-label">音效提醒</view>
-      <view class="item-value">
-        <switch checked="{{soundEnabled}}" bindchange="toggleSound" color="{{themeColor}}"/>
-      </view>
-    </view>
-
-    <view class="settings-item">
       <view class="item-label">震动提醒</view>
       <view class="item-value">
         <switch checked="{{vibrateEnabled}}" bindchange="toggleVibrate" color="{{themeColor}}"/>
       </view>
     </view>
 
-    <navigator url="/pages/sounds/sounds" hover-class="none">
-      <view class="settings-item">
-        <view class="item-label">专注音效</view>
-        <view class="item-value">
-          <text class="item-arrow">></text>
-        </view>
+    <view class="settings-item">
+      <view class="item-label">弹窗提醒</view>
+      <view class="item-value">
+        <switch checked="{{popupEnabled}}" bindchange="togglePopup" color="{{themeColor}}"/>
       </view>
-    </navigator>
+    </view>
+
+    <view class="settings-item">
+      <view class="item-label">提醒重复次数</view>
+      <view class="item-value">
+        <picker mode="selector"
+                range="{{repeatOptions}}"
+                value="{{repeatIndex}}"
+                bindchange="changeRepeatCount">
+          <text class="picker-text">{{repeatOptions[repeatIndex]}}</text>
+          <text class="item-arrow">></text>
+        </picker>
+      </view>
+    </view>
+
+    <view class="settings-item">
+      <view class="item-label">提醒间隔</view>
+      <view class="item-value">
+        <picker mode="selector"
+                range="{{reminderIntervalOptions}}"
+                range-key="name"
+                value="{{reminderIntervalIndex}}"
+                bindchange="changeReminderInterval">
+          <text class="picker-text">{{reminderIntervalOptions[reminderIntervalIndex].name}}</text>
+          <text class="item-arrow">></text>
+        </picker>
+      </view>
+    </view>
   </view>
 
   <view class="settings-group">
@@ -168,12 +186,22 @@
   
   <view class="settings-group">
     <view class="settings-title">关于</view>
-    
+
     <view class="settings-item">
       <view class="item-label">版本</view>
-      <view class="item-value">1.0.0</view>
+      <view class="item-value" style="color: {{themeColor}}">1.2.0</view>
     </view>
-    
+
+    <view class="settings-item" bindtap="shareToFriend">
+      <view class="item-label">
+        <text class="share-icon">📤</text>
+        <text>分享给好友</text>
+      </view>
+      <view class="item-value">
+        <text class="item-arrow">></text>
+      </view>
+    </view>
+
     <button class="feedback-btn" open-type="feedback">意见反馈</button>
   </view>
 </view> 

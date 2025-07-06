@@ -1,3 +1,8 @@
 {
-  "usingComponents": {}
+  "navigationBarTitleText": "成就系统",
+  "navigationBarBackgroundColor": "#ff6b6b",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "achievement-unlock": "/components/achievement-unlock/achievement-unlock"
+  }
 }

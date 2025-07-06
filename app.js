@@ -52,17 +52,17 @@ App({
     if (!wx.getStorageSync('tasks')) {
       wx.setStorageSync('tasks', []);
     }
-    
+
     // 检查今日统计数据是否为当天的
     const today = new Date().toDateString();
     let todayStats = wx.getStorageSync('todayStats') || { date: today, completed: 0, focusTime: 0 };
-    
+
     if (todayStats.date !== today) {
       // 是新的一天，重置统计数据
       todayStats = { date: today, completed: 0, focusTime: 0 };
       wx.setStorageSync('todayStats', todayStats);
     }
-    
+
     // 检查是否初始化了设置
     if (!wx.getStorageSync('focusDuration')) {
       wx.setStorageSync('focusDuration', 25);
@@ -72,5 +72,7 @@ App({
       wx.setStorageSync('autoStartBreak', true);
       wx.setStorageSync('autoStartFocus', false);
     }
-  }
+  },
+
+
 });

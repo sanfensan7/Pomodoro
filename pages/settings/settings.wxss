@@ -178,4 +178,68 @@
 .feedback-btn:active {
   transform: scale(0.98);
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
-} 
+}
+
+/* 提醒设置样式 */
+.picker-text {
+  color: #333;
+  font-size: 28rpx;
+}
+
+.item-arrow {
+  color: #999;
+  font-size: 24rpx;
+  margin-left: 10rpx;
+}
+
+/* 设置项悬停效果 */
+.settings-item:active {
+  background-color: #f8f8f8;
+  transform: scale(0.995);
+}
+
+/* 开关样式优化 */
+switch {
+  transform: scale(0.9);
+}
+
+/* 选择器容器样式 */
+.settings-item picker {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* 提醒设置组标题样式 */
+.settings-group .settings-title {
+  position: relative;
+}
+
+.settings-group .settings-title::before {
+  content: '🔔';
+  margin-right: 8rpx;
+  font-size: 28rpx;
+}
+
+/* 分享按钮样式 */
+.share-icon {
+  margin-right: 12rpx;
+  font-size: 28rpx;
+}
+
+.settings-item .item-label {
+  display: flex;
+  align-items: center;
+}
+
+.settings-item[bindtap="shareToFriend"] {
+  background: linear-gradient(135deg, rgba(var(--theme-color-rgb), 0.05), rgba(var(--theme-color-rgb), 0.1));
+  border-left: 4rpx solid var(--theme-color);
+  transition: all 0.3s ease;
+}
+
+.settings-item[bindtap="shareToFriend"]:active {
+  background: linear-gradient(135deg, rgba(var(--theme-color-rgb), 0.1), rgba(var(--theme-color-rgb), 0.15));
+  transform: translateX(8rpx);
+}

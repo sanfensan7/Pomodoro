@@ -1,4 +1,5 @@
 const app = getApp();
+const shareHelper = require('../../utils/share-helper');
 
 // 辅助函数：将十六进制颜色转换为RGB
 function hexToRgb(hex) {
@@ -31,8 +32,20 @@ Page({
     autoStartFocus: false,
 
     // 提醒设置
-    soundEnabled: true,
-    vibrateEnabled: true
+    vibrateEnabled: true,
+    popupEnabled: true,
+
+    // 完成提醒设置
+    repeatIndex: 1,
+    repeatOptions: ['1次', '2次', '3次', '5次', '持续提醒'],
+    reminderIntervalIndex: 1,
+    reminderIntervalOptions: [
+      { name: '立即', value: 0 },
+      { name: '3秒后', value: 3 },
+      { name: '5秒后', value: 5 },
+      { name: '10秒后', value: 10 },
+      { name: '30秒后', value: 30 }
+    ]
   },
 
   onLoad: function() {
@@ -59,8 +72,10 @@ Page({
     const currentTheme = wx.getStorageSync('currentTheme') || 'red';
     const autoStartBreak = wx.getStorageSync('autoStartBreak');
     const autoStartFocus = wx.getStorageSync('autoStartFocus');
-    const soundEnabled = wx.getStorageSync('soundEnabled');
     const vibrateEnabled = wx.getStorageSync('vibrateEnabled');
+    const popupEnabled = wx.getStorageSync('popupEnabled');
+    const repeatIndex = wx.getStorageSync('repeatIndex') || 1;
+    const reminderIntervalIndex = wx.getStorageSync('reminderIntervalIndex') || 1;
     
     // 找到对应的索引
     const focusDurationIndex = this.data.durationOptions.indexOf(focusDuration);
@@ -79,8 +94,10 @@ Page({
       currentTheme: currentTheme,
       autoStartBreak: autoStartBreak === false ? false : true,
       autoStartFocus: autoStartFocus === true ? true : false,
-      soundEnabled: soundEnabled !== null ? soundEnabled : true,
-      vibrateEnabled: vibrateEnabled !== null ? vibrateEnabled : true
+      vibrateEnabled: vibrateEnabled !== null ? vibrateEnabled : true,
+      popupEnabled: popupEnabled !== null ? popupEnabled : true,
+      repeatIndex: repeatIndex,
+      reminderIntervalIndex: reminderIntervalIndex
     });
   },
   
@@ -96,7 +113,11 @@ Page({
     wx.setStorageSync('currentTheme', this.data.currentTheme);
     wx.setStorageSync('autoStartBreak', this.data.autoStartBreak);
     wx.setStorageSync('autoStartFocus', this.data.autoStartFocus);
-    
+    wx.setStorageSync('vibrateEnabled', this.data.vibrateEnabled);
+    wx.setStorageSync('popupEnabled', this.data.popupEnabled);
+    wx.setStorageSync('repeatIndex', this.data.repeatIndex);
+    wx.setStorageSync('reminderIntervalIndex', this.data.reminderIntervalIndex);
+
     // 更新全局变量
     if (app.globalData) {
       app.globalData.themeColor = this.data.themeColor;
@@ -145,22 +166,6 @@ Page({
     this.saveSettings();
   },
 
-  toggleSound: function(e) {
-    const value = e.detail.value;
-    this.setData({
-      soundEnabled: value
-    });
-    wx.setStorageSync('soundEnabled', value);
-
-    // 播放测试音效
-    if (value) {
-      wx.showToast({
-        title: '音效已开启',
-        icon: 'success'
-      });
-    }
-  },
-
   toggleVibrate: function(e) {
     const value = e.detail.value;
     this.setData({
@@ -179,7 +184,46 @@ Page({
       });
     }
   },
-  
+
+  togglePopup: function(e) {
+    const value = e.detail.value;
+    this.setData({
+      popupEnabled: value
+    });
+    this.saveSettings();
+
+    wx.showToast({
+      title: value ? '弹窗提醒已开启' : '弹窗提醒已关闭',
+      icon: 'success'
+    });
+  },
+
+  changeRepeatCount: function(e) {
+    const index = parseInt(e.detail.value);
+    this.setData({
+      repeatIndex: index
+    });
+    this.saveSettings();
+
+    wx.showToast({
+      title: '重复次数已更改',
+      icon: 'success'
+    });
+  },
+
+  changeReminderInterval: function(e) {
+    const index = parseInt(e.detail.value);
+    this.setData({
+      reminderIntervalIndex: index
+    });
+    this.saveSettings();
+
+    wx.showToast({
+      title: '提醒间隔已更改',
+      icon: 'success'
+    });
+  },
+
   changeTheme: function(e) {
     const color = e.currentTarget.dataset.color;
     const theme = e.currentTarget.dataset.theme;
@@ -200,16 +244,34 @@ Page({
   
   changeTimerStyle: function(e) {
     const style = e.currentTarget.dataset.style;
-    
+
     this.setData({
       timerStyle: style
     });
-    
+
     this.saveSettings();
-    
+
     wx.showToast({
       title: '样式已更改',
       icon: 'success'
     });
+  },
+
+  shareToFriend: function() {
+    // 使用分享工具模块
+    shareHelper.showShareMenu({
+      includeStats: true,
+      context: 'total',
+      path: '/pages/focus/focus'
+    });
+  },
+
+  // 页面分享配置
+  onShareAppMessage: function() {
+    return shareHelper.getShareAppMessageConfig('total', '/pages/focus/focus');
+  },
+
+  onShareTimeline: function() {
+    return shareHelper.getShareTimelineConfig('total');
   }
-}); 
+});

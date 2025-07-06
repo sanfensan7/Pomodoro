@@ -1,3 +1,5 @@
+var shareHelper = require('../../utils/share-helper');
+
 Page({
   data: {
     themeColor: '#ff6b6b',
@@ -57,13 +59,19 @@ Page({
   },
 
   onLoad: function() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
+
     // 获取主题色
-    const themeColor = wx.getStorageSync('themeColor') || '#ff6b6b';
-    
+    var themeColor = wx.getStorageSync('themeColor') || '#ff6b6b';
+
     // 获取当前音效设置
-    const currentSound = wx.getStorageSync('backgroundSound') || 'none';
-    const volume = wx.getStorageSync('soundVolume') || 50;
-    
+    var currentSound = wx.getStorageSync('backgroundSound') || 'none';
+    var volume = wx.getStorageSync('soundVolume') || 50;
+
     this.setData({
       themeColor: themeColor,
       currentSound: currentSound,

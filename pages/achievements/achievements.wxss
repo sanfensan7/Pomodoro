@@ -1,59 +1,56 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  padding: 48rpx;
-  background-color: #f8f9fa;
+  background: #f5f5f5;
   min-height: 100vh;
+  --theme-color: #ff6b6b;
 }
 
 .header {
   display: flex;
   align-items: center;
-  margin-bottom: 40rpx;
+  padding: 20rpx 30rpx;
+  background: var(--theme-color);
+  color: white;
 }
 
 .back-icon {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 24rpx;
-  font-size: 32rpx;
-  color: #666;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 20rpx;
 }
 
+.back-icon image {
+  width: 100%;
+  height: 100%;
+  filter: brightness(0) invert(1);
+}
 .title {
   font-size: 36rpx;
   font-weight: 600;
-  color: #333;
 }
 
 .level-card {
-  background-color: white;
+  background: white;
   border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 32rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+  padding: 30rpx;
+  margin: 20rpx 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .level-info {
   display: flex;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .level-badge {
-  width: 80rpx;
-  height: 80rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
+  background: var(--theme-color);
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 24rpx;
+  margin-right: 20rpx;
 }
 
 .level-text {
@@ -69,24 +66,25 @@
 .level-title {
   font-size: 32rpx;
   color: #333;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 8rpx;
 }
 
 .exp-info {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #666;
 }
 
 .exp-bar {
   height: 12rpx;
-  background-color: #f0f0f0;
+  background: #f0f0f0;
   border-radius: 6rpx;
   overflow: hidden;
 }
 
 .exp-progress {
   height: 100%;
+  background: var(--theme-color);
   border-radius: 6rpx;
   transition: width 0.3s ease;
 }
@@ -94,22 +92,22 @@
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16rpx;
-  margin-bottom: 32rpx;
+  gap: 15rpx;
+  margin: 20rpx 30rpx;
 }
 
 .stat-item {
-  background-color: white;
+  background: white;
   border-radius: 12rpx;
-  padding: 24rpx;
+  padding: 25rpx 20rpx;
   text-align: center;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
   font-size: 32rpx;
   font-weight: 600;
-  color: #333;
+  color: var(--theme-color);
   margin-bottom: 8rpx;
 }
 
@@ -119,28 +117,30 @@
 }
 
 .category-tabs {
+  margin: 20rpx 30rpx;
+}
+
+.category-container {
   display: flex;
-  background-color: white;
-  border-radius: 12rpx;
-  padding: 8rpx;
-  margin-bottom: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  gap: 15rpx;
 }
 
 .category-tab {
   flex: 1;
   text-align: center;
-  padding: 16rpx 8rpx;
-  border-radius: 8rpx;
+  padding: 15rpx 20rpx;
+  border-radius: 25rpx;
   font-size: 26rpx;
   color: #666;
+  background: white;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 2rpx solid transparent;
 }
 
 .category-tab.active {
-  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.1);
-  font-weight: 500;
+  background: var(--theme-color);
+  color: white;
+  font-weight: 600;
 }
 
 .category-name {
@@ -149,79 +149,83 @@
 
 .category-count {
   font-size: 22rpx;
+  opacity: 0.8;
 }
 
 .achievements-list {
+  margin: 0 30rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 15rpx;
 }
 
 .achievement-item {
-  background-color: white;
+  background: white;
   border-radius: 16rpx;
-  padding: 32rpx;
+  padding: 25rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .achievement-item.locked {
   opacity: 0.6;
 }
 
+.achievement-item.unlocked {
+  border-left: 4rpx solid var(--theme-color);
+}
+
 .achievement-icon {
-  width: 80rpx;
-  height: 80rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background: #f0f0f0;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 40rpx;
-  margin-right: 24rpx;
-  transition: all 0.3s ease;
+  font-size: 32rpx;
+  margin-right: 20rpx;
 }
 
 .achievement-icon.unlocked {
-  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.1);
-  transform: scale(1.1);
+  background: var(--theme-color);
+  color: white;
 }
-
 .achievement-info {
   flex: 1;
 }
 
 .achievement-title {
-  font-size: 32rpx;
+  font-size: 30rpx;
   color: #333;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 8rpx;
 }
-
 .achievement-description {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #666;
-  margin-bottom: 16rpx;
+  margin-bottom: 15rpx;
 }
 
 .achievement-progress {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 15rpx;
+  margin-bottom: 10rpx;
 }
 
 .progress-bar {
   flex: 1;
   height: 8rpx;
-  background-color: #f0f0f0;
+  background: #f0f0f0;
   border-radius: 4rpx;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
+  background: var(--theme-color);
   border-radius: 4rpx;
   transition: width 0.3s ease;
 }
@@ -233,37 +237,50 @@
   text-align: right;
 }
 
+.achievement-reward {
+  margin-top: 10rpx;
+}
+
+.reward-text {
+  font-size: 22rpx;
+  color: #FF9800;
+  font-weight: 600;
+}
+
 .achievement-status {
-  margin-left: 24rpx;
+  margin-left: 20rpx;
 }
 
 .status-badge {
-  width: 48rpx;
-  height: 48rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 20rpx;
   color: white;
-  transition: all 0.3s ease;
 }
 
 .status-badge.locked {
-  background-color: #ccc;
+  background: #ccc;
+}
+
+.status-badge.unlocked {
+  background: var(--theme-color);
 }
 
 .tips {
   text-align: center;
-  padding: 80rpx 0;
+  padding: 60rpx 30rpx;
   color: #999;
 }
 
 .tips-icon {
-  font-size: 80rpx;
-  margin-bottom: 24rpx;
+  font-size: 60rpx;
+  margin-bottom: 20rpx;
 }
 
 .tips-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
 }

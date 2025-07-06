@@ -1,4 +1,6 @@
-const app = getApp();
+var app = getApp();
+var achievementTracker = require('../../utils/achievement-tracker');
+var shareHelper = require('../../utils/share-helper');
 
 Page({
   data: {
@@ -16,16 +18,22 @@ Page({
   },
 
   onLoad: function() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
+
     // 获取全局主题色
     if (app.globalData.themeColor) {
       this.setData({
         themeColor: app.globalData.themeColor
       });
     }
-    
+
     // 加载保存的设置
     this.loadSettings();
-    
+
     // 初始化时钟
     this.initTimer();
 
@@ -172,9 +180,8 @@ Page({
         // 停止背景音效
         self.stopBackgroundSound();
 
-        // 计时结束，播放提醒音效和震动
-        self.playCompletionSound();
-        self.vibrate();
+        // 计时结束，执行完成提醒
+        self.executeCompletionReminder();
 
         // 更新经验值和成就
         self.updateExperience();
@@ -521,10 +528,6 @@ Page({
 
   // 音效和震动功能
   playButtonSound: function() {
-    // 检查是否开启音效
-    const soundEnabled = wx.getStorageSync('soundEnabled');
-    if (soundEnabled === false) return;
-
     try {
       // 使用轻微震动作为按钮反馈
       wx.vibrateShort && wx.vibrateShort({
@@ -535,22 +538,7 @@ Page({
     }
   },
 
-  playCompletionSound: function() {
-    // 检查是否开启音效
-    const soundEnabled = wx.getStorageSync('soundEnabled');
-    if (soundEnabled === false) return;
 
-    try {
-      // 使用系统提示音
-      wx.showToast({
-        title: '专注完成！',
-        icon: 'success',
-        duration: 2000
-      });
-    } catch (e) {
-      console.log('完成音效播放失败:', e);
-    }
-  },
 
   vibrate: function() {
     // 检查是否开启震动
@@ -690,21 +678,48 @@ Page({
   updateAchievements: function() {
     if (this.data.currentMode !== 'focus') return;
 
+    const self = this;
+    const focusDuration = this.data.focusDuration;
+    const wasInterrupted = this.data.wasInterrupted;
+
     // 更新专注次数相关成就
     const totalSessions = (wx.getStorageSync('totalSessions') || 0) + 1;
     wx.setStorageSync('totalSessions', totalSessions);
 
     // 更新专注时长相关成就
-    const totalFocusTime = (wx.getStorageSync('totalFocusTime') || 0) + this.data.focusDuration;
+    const totalFocusTime = (wx.getStorageSync('totalFocusTime') || 0) + focusDuration;
     wx.setStorageSync('totalFocusTime', totalFocusTime);
 
     // 更新连击相关成就
     this.updateStreak();
 
-    // 检查时间相关成就
+    // 使用成就追踪器更新成就
+    achievementTracker.updateProgress('session_complete', 1, {
+      duration: focusDuration,
+      interrupted: wasInterrupted,
+      timestamp: Date.now()
+    });
+
+    achievementTracker.updateProgress('focus_time', totalFocusTime);
+
+    // 更新连击成就
+    const currentStreak = wx.getStorageSync('currentStreak') || 0;
+    achievementTracker.updateProgress('streak_update', currentStreak);
+
+    // 更新完美专注成就
+    if (!wasInterrupted) {
+      achievementTracker.updateProgress('perfect_session', 1);
+    }
+
+    // 监听成就解锁
+    achievementTracker.addListener(function(achievement) {
+      self.showAchievementUnlocked(achievement);
+    });
+
+    // 检查时间相关成就（保留原有逻辑）
     this.checkTimeBasedAchievements();
 
-    // 检查完美专注成就
+    // 检查完美专注成就（保留原有逻辑）
     this.checkPerfectFocusAchievement();
   },
 
@@ -759,5 +774,111 @@ Page({
     // 简化实现：每次完成专注都算作完美专注
     const perfectCount = (wx.getStorageSync('achievement_perfectionist') || 0) + 1;
     wx.setStorageSync('achievement_perfectionist', perfectCount);
+  },
+
+  executeCompletionReminder: function() {
+    const self = this;
+
+    // 获取提醒设置
+    const vibrateEnabled = wx.getStorageSync('vibrateEnabled') !== false;
+    const popupEnabled = wx.getStorageSync('popupEnabled') !== false;
+    const repeatIndex = wx.getStorageSync('repeatIndex') || 1;
+    const reminderIntervalIndex = wx.getStorageSync('reminderIntervalIndex') || 1;
+
+    // 获取提醒配置
+    const repeatOptions = ['1次', '2次', '3次', '5次', '持续提醒'];
+    const reminderIntervalOptions = [
+      { name: '立即', value: 0 },
+      { name: '3秒后', value: 3 },
+      { name: '5秒后', value: 5 },
+      { name: '10秒后', value: 10 },
+      { name: '30秒后', value: 30 }
+    ];
+
+    const repeatCount = repeatIndex === 4 ? -1 : parseInt(repeatOptions[repeatIndex].charAt(0)); // -1表示持续提醒
+    const intervalSeconds = reminderIntervalOptions[reminderIntervalIndex].value;
+
+    // 延迟执行提醒
+    setTimeout(function() {
+      self.performReminder(vibrateEnabled, popupEnabled, repeatCount, 0);
+    }, intervalSeconds * 1000);
+  },
+
+  performReminder: function(vibrateEnabled, popupEnabled, repeatCount, currentCount) {
+    const self = this;
+
+    // 震动提醒
+    if (vibrateEnabled) {
+      this.vibrate();
+    }
+
+    // 弹窗提醒
+    if (popupEnabled && currentCount === 0) {
+      this.showCompletionPopup();
+    }
+
+    // 检查是否需要重复提醒
+    if (repeatCount === -1) {
+      // 持续提醒，每30秒提醒一次，最多提醒10次
+      if (currentCount < 10) {
+        setTimeout(function() {
+          self.performReminder(vibrateEnabled, false, repeatCount, currentCount + 1);
+        }, 30000);
+      }
+    } else if (currentCount + 1 < repeatCount) {
+      // 按设定次数重复提醒，间隔3秒
+      setTimeout(function() {
+        self.performReminder(vibrateEnabled, false, repeatCount, currentCount + 1);
+      }, 3000);
+    }
+  },
+
+  showCompletionPopup: function() {
+    const modeText = this.data.currentMode === 'focus' ? '专注' : '休息';
+
+    wx.showModal({
+      title: '🎉 ' + modeText + '完成！',
+      content: modeText === '专注' ?
+        '恭喜你完成了一个专注周期！\n建议适当休息一下，保持良好状态。' :
+        '休息时间结束！\n准备好开始下一个专注周期了吗？',
+      confirmText: modeText === '专注' ? '开始休息' : '开始专注',
+      cancelText: '稍后',
+      success: function(res) {
+        if (res.confirm) {
+          if (modeText === '专注') {
+            // 跳转到完成页面或开始休息
+            wx.navigateTo({
+              url: '/pages/complete/complete?duration=' + this.data.focusDuration + '&completed=' + this.data.todayCompleted
+            });
+          } else {
+            // 开始新的专注周期
+            this.switchMode({ currentTarget: { dataset: { mode: 'focus' } } });
+          }
+        }
+      }.bind(this)
+    });
+  },
+
+  showAchievementUnlocked: function(achievement) {
+    // 显示成就解锁提示
+    wx.showToast({
+      title: '🎉 成就解锁: ' + achievement.title,
+      icon: 'success',
+      duration: 3000
+    });
+
+    // 震动反馈
+    wx.vibrateShort && wx.vibrateShort();
+  },
+
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    return shareHelper.getShareAppMessageConfig('daily', '/pages/focus/focus');
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    return shareHelper.getShareTimelineConfig('daily');
   }
+
 });

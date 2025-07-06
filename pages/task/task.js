@@ -1,4 +1,5 @@
-const app = getApp();
+var app = getApp();
+var shareHelper = require('../../utils/share-helper');
 
 Page({
   data: {
@@ -18,13 +19,19 @@ Page({
   },
 
   onLoad: function() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
+
     // 获取全局主题色
     if (app.globalData.themeColor) {
       this.setData({
         themeColor: app.globalData.themeColor
       });
     }
-    
+
     // 加载任务列表
     this.loadTasks();
   },
@@ -42,7 +49,7 @@ Page({
   },
   
   loadTasks: function() {
-    const tasks = wx.getStorageSync('tasks') || [];
+    var tasks = wx.getStorageSync('tasks') || [];
     this.setData({ tasks });
   },
   
@@ -88,14 +95,14 @@ Page({
   },
 
   setPriority: function(e) {
-    const priority = e.currentTarget.dataset.priority;
+    var priority = e.currentTarget.dataset.priority;
     this.setData({
       'newTask.priority': priority
     });
   },
 
   setCategory: function(e) {
-    const category = e.currentTarget.dataset.category;
+    var category = e.currentTarget.dataset.category;
     this.setData({
       'newTask.category': category
     });
@@ -110,8 +117,8 @@ Page({
       return;
     }
 
-    const tasks = this.data.tasks;
-    const newTask = {
+    var tasks = this.data.tasks;
+    var newTask = {
       id: Date.now().toString(),
       title: this.data.newTask.title,
       description: this.data.newTask.description,
@@ -139,7 +146,7 @@ Page({
   },
 
   editTask: function(e) {
-    const task = e.currentTarget.dataset.task;
+    var task = e.currentTarget.dataset.task;
     this.setData({
       editingTask: task,
       showTaskForm: true,
@@ -163,7 +170,7 @@ Page({
       return;
     }
 
-    const tasks = this.data.tasks.map(function(task) {
+    var tasks = this.data.tasks.map(function(task) {
       if (task.id === this.data.editingTask.id) {
         return Object.assign({}, task, {
           title: this.data.newTask.title,
@@ -191,14 +198,14 @@ Page({
   },
 
   deleteTask: function(e) {
-    const taskId = e.currentTarget.dataset.id;
+    var taskId = e.currentTarget.dataset.id;
 
     wx.showModal({
       title: '确认删除',
       content: '确定要删除这个任务吗？',
       success: function(res) {
         if (res.confirm) {
-          const tasks = this.data.tasks.filter(function(task) { return task.id !== taskId; });
+          var tasks = this.data.tasks.filter(function(task) { return task.id !== taskId; });
 
           this.setData({ tasks });
           wx.setStorageSync('tasks', tasks);
@@ -213,15 +220,15 @@ Page({
   },
 
   sortTasks: function(e) {
-    const sortType = e.currentTarget.dataset.type;
-    let tasks = this.data.tasks.slice();
+    var sortType = e.currentTarget.dataset.type;
+    var tasks = this.data.tasks.slice();
 
     switch (sortType) {
       case 'createTime':
         tasks.sort(function(a, b) { return b.createTime - a.createTime; });
         break;
       case 'priority':
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        var priorityOrder = { high: 3, medium: 2, low: 1 };
         tasks.sort(function(a, b) { return (priorityOrder[b.priority] || 2) - (priorityOrder[a.priority] || 2); });
         break;
       case 'progress':
@@ -241,8 +248,8 @@ Page({
   },
   
   toggleTaskStatus: function(e) {
-    const taskId = e.currentTarget.dataset.id;
-    const tasks = this.data.tasks.map(function(task) {
+    var taskId = e.currentTarget.dataset.id;
+    var tasks = this.data.tasks.map(function(task) {
       if (task.id === taskId) {
         return Object.assign({}, task, {
           completed: !task.completed
@@ -256,7 +263,7 @@ Page({
   },
 
   startFocus: function(e) {
-    const task = e.currentTarget.dataset.task;
+    var task = e.currentTarget.dataset.task;
     if (task.completedCount >= task.totalCount) {
       wx.showToast({
         title: '该任务已完成所有番茄钟',
@@ -267,10 +274,20 @@ Page({
 
     // 保存当前任务到全局状态
     app.globalData.currentTask = task;
-    
+
     // 切换到专注页面
     wx.switchTab({
       url: '/pages/focus/focus'
     });
+  },
+
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    return shareHelper.getShareAppMessageConfig('total', '/pages/task/task');
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    return shareHelper.getShareTimelineConfig('total');
   }
-}); 
+});

@@ -1,8 +1,8 @@
-<view class="container" style="--theme-color: {{themeColor}}">
+<view class="container" style="--theme-color: {{themeColor}}; --theme-color-rgb: {{themeColorRGB}};">
   <view class="header">
     <navigator url="/pages/settings/settings" open-type="navigateBack" hover-class="none">
       <view class="back-icon">
-        <text>←</text>
+        <image src="/images/back.png" mode="aspectFit"></image>
       </view>
     </navigator>
     <text class="title">成就系统</text>
@@ -11,7 +11,7 @@
   <!-- 用户等级信息 -->
   <view class="level-card">
     <view class="level-info">
-      <view class="level-badge" style="background-color: {{themeColor}}">
+      <view class="level-badge">
         <text class="level-text">Lv.{{userLevel}}</text>
       </view>
       <view class="level-details">
@@ -20,8 +20,7 @@
       </view>
     </view>
     <view class="exp-bar">
-      <view class="exp-progress" 
-            style="width: {{(currentExp/nextLevelExp*100)}}%; background-color: {{themeColor}}"></view>
+      <view class="exp-progress" style="width: {{(currentExp/nextLevelExp*100)}}%"></view>
     </view>
   </view>
 
@@ -47,15 +46,16 @@
 
   <!-- 成就分类 -->
   <view class="category-tabs">
-    <block wx:for="{{categories}}" wx:key="id">
-      <view class="category-tab {{currentCategory === item.id ? 'active' : ''}}"
-            style="{{currentCategory === item.id ? 'color: ' + themeColor + '; border-color: ' + themeColor : ''}}"
-            bindtap="switchCategory"
-            data-id="{{item.id}}">
-        <text class="category-name">{{item.name}}</text>
-        <text class="category-count">({{item.count}})</text>
-      </view>
-    </block>
+    <view class="category-container">
+      <block wx:for="{{categories}}" wx:key="id">
+        <view class="category-tab {{currentCategory === item.id ? 'active' : ''}}"
+              bindtap="switchCategory"
+              data-id="{{item.id}}">
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-count">({{item.count}})</text>
+        </view>
+      </block>
+    </view>
   </view>
 
   <!-- 成就列表 -->
@@ -68,17 +68,18 @@
         <view class="achievement-info">
           <view class="achievement-title">{{item.title}}</view>
           <view class="achievement-description">{{item.description}}</view>
-          <view class="achievement-progress">
+          <view class="achievement-progress" wx:if="{{!item.unlocked}}">
             <view class="progress-bar">
-              <view class="progress-fill" 
-                    style="width: {{(item.progress/item.target*100)}}%; background-color: {{themeColor}}"></view>
+              <view class="progress-fill" style="width: {{(item.progress/item.target*100)}}%"></view>
             </view>
             <view class="progress-text">{{item.progress}}/{{item.target}}</view>
           </view>
+          <view class="achievement-reward" wx:if="{{item.unlocked && item.expReward}}">
+            <text class="reward-text">🌟 +{{item.expReward}} EXP</text>
+          </view>
         </view>
         <view class="achievement-status">
-          <view class="status-badge {{item.unlocked ? 'unlocked' : 'locked'}}"
-                style="{{item.unlocked ? 'background-color: ' + themeColor : ''}}">
+          <view class="status-badge {{item.unlocked ? 'unlocked' : 'locked'}}">
             {{item.unlocked ? '✓' : '🔒'}}
           </view>
         </view>
@@ -91,6 +92,13 @@
     <view class="tips-text">暂无{{currentCategory === 'unlocked' ? '已解锁' : '未解锁'}}的成就</view>
   </view>
 </view>
+
+<!-- 成就解锁动画组件 -->
+<achievement-unlock
+  show="{{showUnlockAnimation}}"
+  achievement="{{unlockedAchievement}}"
+  bind:hide="onUnlockAnimationHide">
+</achievement-unlock>
 
 <wxs module="utils">
   var formatTime = function(minutes) {
@@ -110,7 +118,7 @@
     }
     return achievements;
   };
-  
+
   module.exports = {
     formatTime: formatTime,
     getFilteredAchievements: getFilteredAchievements

@@ -47,15 +47,15 @@
   
   <view class="stats-summary">
     <view class="stat-item">
-      <text class="stat-value">{{todayCompleted}}</text>
+      <text class="stat-value" style="color: {{themeColor}}">{{todayCompleted}}</text>
       <text class="stat-label">今日完成</text>
     </view>
     <view class="stat-item">
-      <text class="stat-value">{{todayFocusTime}}</text>
+      <text class="stat-value" style="color: {{themeColor}}">{{todayFocusTime}}</text>
       <text class="stat-label">专注时长</text>
     </view>
     <view class="stat-item">
-      <text class="stat-value">{{weekCompleted}}</text>
+      <text class="stat-value" style="color: {{themeColor}}">{{weekCompleted}}</text>
       <text class="stat-label">本周完成</text>
     </view>
   </view>

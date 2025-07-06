@@ -1,4 +1,4 @@
-<view class="container">
+<view class="container" style="--theme-color: {{themeColor}}">
   <view class="header">
     <navigator url="/pages/focus/focus" open-type="navigate" hover-class="none">
       <view class="back-icon">
@@ -40,7 +40,7 @@
         <block wx:elif="{{period === 'week'}}">本周专注次数：</block>
         <block wx:else>本月专注次数：</block>
       </view>
-      <view class="summary-value">{{currentStats.count}}</view>
+      <view class="summary-value" style="color: {{themeColor}}">{{currentStats.count}}</view>
     </view>
     
     <view class="summary-item">
@@ -49,7 +49,7 @@
         <block wx:elif="{{period === 'week'}}">本周专注时长：</block>
         <block wx:else>本月专注时长：</block>
       </view>
-      <view class="summary-value">{{currentStats.duration}}</view>
+      <view class="summary-value" style="color: {{themeColor}}">{{currentStats.duration}}</view>
     </view>
     
     <view class="summary-item">
@@ -57,12 +57,12 @@
         <block wx:if="{{period === 'day'}}">平均每小时：</block>
         <block wx:else>平均每日：</block>
       </view>
-      <view class="summary-value">{{currentStats.average}}</view>
+      <view class="summary-value" style="color: {{themeColor}}">{{currentStats.average}}</view>
     </view>
     
     <view class="summary-item">
       <view class="summary-label">最长连续专注：</view>
-      <view class="summary-value">{{currentStats.longest}}</view>
+      <view class="summary-value" style="color: {{themeColor}}">{{currentStats.longest}}</view>
     </view>
   </view>
 </view> 

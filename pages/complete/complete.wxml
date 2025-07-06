@@ -7,11 +7,11 @@
   
   <view class="stats">
     <view class="stat-item">
-      <text class="stat-value">{{focusDuration}}</text>
+      <text class="stat-value" style="color: {{themeColor}}">{{focusDuration}}</text>
       <text class="stat-label">专注时长</text>
     </view>
     <view class="stat-item">
-      <text class="stat-value">{{todayCompleted}}</text>
+      <text class="stat-value" style="color: {{themeColor}}">{{todayCompleted}}</text>
       <text class="stat-label">今日完成</text>
     </view>
   </view>

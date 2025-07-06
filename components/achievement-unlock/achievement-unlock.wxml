@@ -1,0 +1,65 @@
+<view class="achievement-unlock-overlay {{show ? 'show' : ''}}" bindtap="hideUnlock">
+  <view class="achievement-unlock-container" catchtap="">
+    <!-- 背景粒子效果 -->
+    <view class="particles">
+      <view class="particle" wx:for="{{20}}" wx:key="*this" 
+            style="animation-delay: {{index * 0.1}}s; left: {{Math.random() * 100}}%; top: {{Math.random() * 100}}%"></view>
+    </view>
+    
+    <!-- 主要内容 -->
+    <view class="unlock-content">
+      <!-- 成就图标 -->
+      <view class="achievement-icon-large {{achievement.rarity}}-glow">
+        <view class="icon-inner">{{achievement.icon}}</view>
+        <view class="icon-ring"></view>
+        <view class="icon-pulse"></view>
+      </view>
+      
+      <!-- 成就信息 -->
+      <view class="achievement-details">
+        <view class="unlock-title">🎉 成就解锁！</view>
+        <view class="achievement-name">{{achievement.title}}</view>
+        <view class="achievement-desc">{{achievement.description}}</view>
+        
+        <!-- 徽章 -->
+        <view class="achievement-badges">
+          <view class="badge rarity-{{achievement.rarity}}">{{rarityText}}</view>
+          <view class="badge difficulty-{{achievement.difficulty}}">{{difficultyText}}</view>
+        </view>
+        
+        <!-- 奖励 -->
+        <view class="reward-section">
+          <view class="reward-item">
+            <text class="reward-icon">🌟</text>
+            <text class="reward-text">+{{achievement.expReward}} 经验值</text>
+          </view>
+          <block wx:if="{{achievement.rewards && achievement.rewards.length > 1}}">
+            <view class="reward-item" wx:for="{{achievement.rewards}}" wx:key="type" wx:if="{{item.type !== 'exp'}}">
+              <text class="reward-icon">{{item.type === 'title' ? '🏅' : '🎨'}}</text>
+              <text class="reward-text">{{item.description}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+      
+      <!-- 确认按钮 -->
+      <view class="confirm-button" bindtap="hideUnlock">
+        <text>太棒了！</text>
+      </view>
+    </view>
+    
+    <!-- 庆祝效果 -->
+    <view class="celebration">
+      <view class="firework" wx:for="{{6}}" wx:key="*this" 
+            style="animation-delay: {{index * 0.2}}s; left: {{20 + index * 12}}%"></view>
+    </view>
+  </view>
+</view>
+
+<wxs module="Math">
+  module.exports = {
+    random: function() {
+      return Math.random();
+    }
+  };
+</wxs>

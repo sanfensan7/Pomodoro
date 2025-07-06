@@ -1,4 +1,5 @@
-const app = getApp();
+var app = getApp();
+var shareHelper = require('../../utils/share-helper');
 
 Page({
   data: {
@@ -18,13 +19,19 @@ Page({
   },
 
   onLoad: function() {
+    // 启用分享功能
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline']
+    });
+
     // 获取全局主题色
     if (app.globalData.themeColor) {
       this.setData({
         themeColor: app.globalData.themeColor
       });
     }
-    
+
     // 加载统计数据
     this.fetchStatsData();
   },
@@ -42,24 +49,24 @@ Page({
   },
   
   getDayStats: function() {
-    const todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
-    
+    var todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
+
     // 获取当天24小时的分布数据
     // 这里简化处理，实际应用中可能需要更详细的时间记录
     // 生成8个时间段的标签
-    const labels = ['0点', '3点', '6点', '9点', '12点', '15点', '18点', '21点'];
-    
+    var labels = ['0点', '3点', '6点', '9点', '12点', '15点', '18点', '21点'];
+
     // 为简化处理，我们将所有专注次数放在当前时间所在的时间段
-    const now = new Date();
-    const hourIndex = Math.floor(now.getHours() / 3);
-    
+    var now = new Date();
+    var hourIndex = Math.floor(now.getHours() / 3);
+
     // 创建值数组，将今日专注次数放入对应时间段
-    const values = new Array(8).fill(0);
+    var values = new Array(8).fill(0);
     values[hourIndex] = todayStats.completed;
-    
+
     // 计算时长的小时和分钟部分
-    const hours = Math.floor(todayStats.focusTime);
-    const minutes = Math.round((todayStats.focusTime - hours) * 60);
+    var hours = Math.floor(todayStats.focusTime);
+    var minutes = Math.round((todayStats.focusTime - hours) * 60);
     
     return {
       labels: labels,
@@ -75,25 +82,25 @@ Page({
   
   getWeekStats: function() {
     // 获取本周的统计数据
-    const weekStats = wx.getStorageSync('weekStats') || { 
+    var weekStats = wx.getStorageSync('weekStats') || {
       weekStart: new Date().toISOString(),
       completed: 0,
       dailyStats: {}
     };
-    
+
     // 计算本周的每天日期，从周一到周日
-    const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
-    const today = new Date();
-    const weekStart = new Date(weekStats.weekStart);
-    
+    var weekDays = ['一', '二', '三', '四', '五', '六', '日'];
+    var today = new Date();
+    var weekStart = new Date(weekStats.weekStart);
+
     // 初始化各天的值
-    const values = new Array(7).fill(0);
-    
+    var values = new Array(7).fill(0);
+
     // 填充有数据的天
-    for (const dateStr in weekStats.dailyStats) {
-      const date = new Date(dateStr);
+    for (var dateStr in weekStats.dailyStats) {
+      var date = new Date(dateStr);
       // 计算这一天是周几 (0 是周日，1-6 是周一至周六)
-      let dayOfWeek = date.getDay();
+      var dayOfWeek = date.getDay();
       // 调整为数组索引 (0-6 代表周一至周日)
       dayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       
@@ -103,27 +110,27 @@ Page({
     }
     
     // 获取所有日专注时长
-    const allDayStats = Object.values(wx.getStorageSync('allDayStats') || {});
-    let weekFocusTime = 0;
-    
+    var allDayStats = Object.values(wx.getStorageSync('allDayStats') || {});
+    var weekFocusTime = 0;
+
     // 筛选本周内的日期
     allDayStats.forEach(function(dayStat) {
-      const statDate = new Date(dayStat.date);
+      var statDate = new Date(dayStat.date);
       if (statDate >= weekStart && statDate <= today) {
         weekFocusTime += dayStat.focusTime;
       }
     });
-    
+
     // 计算时长的小时和分钟部分
-    const hours = Math.floor(weekFocusTime);
-    const minutes = Math.round((weekFocusTime - hours) * 60);
-    
+    var hours = Math.floor(weekFocusTime);
+    var minutes = Math.round((weekFocusTime - hours) * 60);
+
     // 计算日均专注次数
-    const daysElapsed = Math.min(7, Math.floor((today - weekStart) / (24 * 60 * 60 * 1000)) + 1);
-    const avgPerDay = daysElapsed > 0 ? (weekStats.completed / daysElapsed).toFixed(1) : '0.0';
-    
+    var daysElapsed = Math.min(7, Math.floor((today - weekStart) / (24 * 60 * 60 * 1000)) + 1);
+    var avgPerDay = daysElapsed > 0 ? (weekStats.completed / daysElapsed).toFixed(1) : '0.0';
+
     // 查找最大连续专注次数
-    const maxSingleDay = Math.max.apply(Math, values);
+    var maxSingleDay = Math.max.apply(Math, values);
     
     return {
       labels: weekDays,
@@ -140,29 +147,29 @@ Page({
   getMonthStats: function() {
     // 获取本月的统计数据
     // 简化处理，按周汇总
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    
+    var today = new Date();
+    var currentMonth = today.getMonth();
+    var currentYear = today.getFullYear();
+
     // 获取本月第一天
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    
+    var firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+
     // 获取所有日专注统计
-    const allDayStats = wx.getStorageSync('allDayStats') || {};
-    
+    var allDayStats = wx.getStorageSync('allDayStats') || {};
+
     // 按周分组统计
-    const weeklyStats = [0, 0, 0, 0, 0]; // 最多5周
-    let totalCompleted = 0;
-    let totalFocusTime = 0;
-    
+    var weeklyStats = [0, 0, 0, 0, 0]; // 最多5周
+    var totalCompleted = 0;
+    var totalFocusTime = 0;
+
     // 遍历所有日期的统计
-    for (const dateStr in allDayStats) {
-      const date = new Date(dateStr);
-      
+    for (var dateStr in allDayStats) {
+      var date = new Date(dateStr);
+
       // 只统计当月的数据
       if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
         // 计算是本月的第几周
-        const weekOfMonth = Math.floor((date.getDate() - 1) / 7);
+        var weekOfMonth = Math.floor((date.getDate() - 1) / 7);
         
         if (weekOfMonth < 5) {
           weeklyStats[weekOfMonth] += allDayStats[dateStr].completed;
@@ -173,19 +180,19 @@ Page({
     }
     
     // 生成周标签
-    const labels = ['第1周', '第2周', '第3周', '第4周', '第5周'];
-    
+    var labels = ['第1周', '第2周', '第3周', '第4周', '第5周'];
+
     // 计算时长的小时和分钟部分
-    const hours = Math.floor(totalFocusTime);
-    const minutes = Math.round((totalFocusTime - hours) * 60);
-    
+    var hours = Math.floor(totalFocusTime);
+    var minutes = Math.round((totalFocusTime - hours) * 60);
+
     // 计算本月天数
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const daysElapsed = Math.min(daysInMonth, today.getDate());
-    const avgPerDay = daysElapsed > 0 ? (totalCompleted / daysElapsed).toFixed(1) : '0.0';
-    
+    var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    var daysElapsed = Math.min(daysInMonth, today.getDate());
+    var avgPerDay = daysElapsed > 0 ? (totalCompleted / daysElapsed).toFixed(1) : '0.0';
+
     // 查找单周最大专注次数
-    const maxSingleWeek = Math.max.apply(Math, weeklyStats);
+    var maxSingleWeek = Math.max.apply(Math, weeklyStats);
     
     return {
       labels: labels,
@@ -228,14 +235,25 @@ Page({
   
   calculateHeights: function(values) {
     // 计算柱状图高度，最大值对应300rpx高度
-    const maxValue = Math.max(Math.max.apply(Math, values), 1); // 至少为1，避免除以0
+    var maxValue = Math.max(Math.max.apply(Math, values), 1); // 至少为1，避免除以0
     return values.map(function(value) { return (value / maxValue) * 300; });
   },
   
   switchPeriod: function(e) {
-    const period = e.currentTarget.dataset.period;
-    
+    var period = e.currentTarget.dataset.period;
+
     this.setData({ period });
     this.fetchStatsData();
+  },
+
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    return shareHelper.getShareAppMessageConfig('total', '/pages/stats/stats');
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    return shareHelper.getShareTimelineConfig('total');
   }
-}); 
+
+});
