@@ -63,6 +63,11 @@
   color: #666;
 }
 
+.item-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
 .picker {
   font-size: 32rpx;
   color: #666;

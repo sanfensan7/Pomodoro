@@ -1,14 +1,14 @@
 {
   "appid": "wxb0542a0883ab2779",
   "compileType": "miniprogram",
-  "libVersion": "3.7.11",
+  "libVersion": "3.8.10",
   "packOptions": {
     "ignore": [],
     "include": []
   },
   "setting": {
     "coverView": true,
-    "es6": true,
+    "es6": false,
     "postcss": true,
     "minified": true,
     "enhance": true,

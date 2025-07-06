@@ -1,0 +1,68 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <view class="header">
+    <navigator url="/pages/settings/settings" open-type="navigateBack" hover-class="none">
+      <view class="back-icon">
+        <text>←</text>
+      </view>
+    </navigator>
+    <text class="title">专注音效</text>
+  </view>
+
+  <view class="sound-list">
+    <block wx:for="{{sounds}}" wx:key="id">
+      <view class="sound-item {{currentSound === item.id ? 'active' : ''}}" 
+            bindtap="selectSound" 
+            data-id="{{item.id}}">
+        <view class="sound-icon">{{item.icon}}</view>
+        <view class="sound-info">
+          <view class="sound-name">{{item.name}}</view>
+          <view class="sound-description">{{item.description}}</view>
+        </view>
+        <view class="sound-status">
+          <view class="check-icon" wx:if="{{currentSound === item.id}}">✓</view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="controls" wx:if="{{currentSound !== 'none'}}">
+    <view class="control-section">
+      <view class="control-label">音量控制</view>
+      <view class="volume-control">
+        <text class="volume-icon">🔉</text>
+        <slider 
+          class="volume-slider"
+          min="0" 
+          max="100" 
+          value="{{volume}}" 
+          bindchange="changeVolume" 
+          activeColor="{{themeColor}}"
+          backgroundColor="#e0e0e0"
+          block-size="20"
+          show-value />
+        <text class="volume-icon">🔊</text>
+      </view>
+    </view>
+
+    <view class="control-section">
+      <view class="control-label">预览播放</view>
+      <view class="play-control">
+        <view class="play-btn {{isPlaying ? 'playing' : ''}}" 
+              style="background-color: {{themeColor}}"
+              bindtap="togglePlay">
+          <text class="play-icon">{{isPlaying ? '⏸️' : '▶️'}}</text>
+          <text class="play-text">{{isPlaying ? '停止' : '播放'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips">
+    <view class="tips-title">💡 使用提示</view>
+    <view class="tips-content">
+      <text>• 选择的音效将在专注时自动播放</text>
+      <text>• 音量可以在专注过程中调节</text>
+      <text>• 建议选择不会分散注意力的音效</text>
+    </view>
+  </view>
+</view>

@@ -107,7 +107,7 @@ Page({
     let weekFocusTime = 0;
     
     // 筛选本周内的日期
-    allDayStats.forEach(dayStat => {
+    allDayStats.forEach(function(dayStat) {
       const statDate = new Date(dayStat.date);
       if (statDate >= weekStart && statDate <= today) {
         weekFocusTime += dayStat.focusTime;
@@ -123,7 +123,7 @@ Page({
     const avgPerDay = daysElapsed > 0 ? (weekStats.completed / daysElapsed).toFixed(1) : '0.0';
     
     // 查找最大连续专注次数
-    const maxSingleDay = Math.max(...values);
+    const maxSingleDay = Math.max.apply(Math, values);
     
     return {
       labels: weekDays,
@@ -185,7 +185,7 @@ Page({
     const avgPerDay = daysElapsed > 0 ? (totalCompleted / daysElapsed).toFixed(1) : '0.0';
     
     // 查找单周最大专注次数
-    const maxSingleWeek = Math.max(...weeklyStats);
+    const maxSingleWeek = Math.max.apply(Math, weeklyStats);
     
     return {
       labels: labels,
@@ -228,8 +228,8 @@ Page({
   
   calculateHeights: function(values) {
     // 计算柱状图高度，最大值对应300rpx高度
-    const maxValue = Math.max(...values, 1); // 至少为1，避免除以0
-    return values.map(value => (value / maxValue) * 300);
+    const maxValue = Math.max(Math.max.apply(Math, values), 1); // 至少为1，避免除以0
+    return values.map(function(value) { return (value / maxValue) * 300; });
   },
   
   switchPeriod: function(e) {

@@ -50,20 +50,60 @@
   
   <view class="settings-group">
     <view class="settings-title">自动化设置</view>
-    
+
     <view class="settings-item">
       <view class="item-label">自动开始休息</view>
       <view class="item-value">
         <switch checked="{{autoStartBreak}}" bindchange="toggleAutoStartBreak" color="{{themeColor}}"/>
       </view>
     </view>
-    
+
     <view class="settings-item">
       <view class="item-label">休息后自动开始专注</view>
       <view class="item-value">
         <switch checked="{{autoStartFocus}}" bindchange="toggleAutoStartFocus" color="{{themeColor}}"/>
       </view>
     </view>
+  </view>
+
+  <view class="settings-group">
+    <view class="settings-title">提醒设置</view>
+
+    <view class="settings-item">
+      <view class="item-label">音效提醒</view>
+      <view class="item-value">
+        <switch checked="{{soundEnabled}}" bindchange="toggleSound" color="{{themeColor}}"/>
+      </view>
+    </view>
+
+    <view class="settings-item">
+      <view class="item-label">震动提醒</view>
+      <view class="item-value">
+        <switch checked="{{vibrateEnabled}}" bindchange="toggleVibrate" color="{{themeColor}}"/>
+      </view>
+    </view>
+
+    <navigator url="/pages/sounds/sounds" hover-class="none">
+      <view class="settings-item">
+        <view class="item-label">专注音效</view>
+        <view class="item-value">
+          <text class="item-arrow">></text>
+        </view>
+      </view>
+    </navigator>
+  </view>
+
+  <view class="settings-group">
+    <view class="settings-title">游戏化</view>
+
+    <navigator url="/pages/achievements/achievements" hover-class="none">
+      <view class="settings-item">
+        <view class="item-label">成就系统</view>
+        <view class="item-value">
+          <text class="item-arrow">></text>
+        </view>
+      </view>
+    </navigator>
   </view>
   
   <view class="settings-group">

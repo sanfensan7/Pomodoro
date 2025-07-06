@@ -5,7 +5,9 @@
     "pages/stats/stats",
     "pages/settings/settings",
     "pages/complete/complete",
-    "pages/icon-preview"
+    "pages/icon-preview",
+    "pages/sounds/sounds",
+    "pages/achievements/achievements"
   ],
   "window": {
     "backgroundTextStyle": "light",

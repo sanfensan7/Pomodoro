@@ -28,6 +28,9 @@ Page({
     
     // 初始化时钟
     this.initTimer();
+
+    // 初始化背景音效
+    this.initBackgroundSound();
   },
   
   onShow: function() {
@@ -69,6 +72,9 @@ Page({
     if (this.timer) {
       clearInterval(this.timer);
     }
+
+    // 停止背景音效
+    this.stopBackgroundSound();
   },
   
   onReady: function() {
@@ -129,6 +135,9 @@ Page({
   },
   
   toggleTimer: function() {
+    // 播放按钮点击音效
+    this.playButtonSound();
+
     if (this.data.isRunning) {
       this.pauseTimer();
     } else {
@@ -138,29 +147,44 @@ Page({
   
   startTimer: function() {
     this.setData({ isRunning: true });
-    
-    this.timer = setInterval(() => {
-      if (this.data.timeLeft > 0) {
-        this.setData({
-          timeLeft: this.data.timeLeft - 1
+
+    // 开始播放背景音效
+    this.startBackgroundSound();
+
+    var self = this;
+    this.timer = setInterval(function() {
+      if (self.data.timeLeft > 0) {
+        self.setData({
+          timeLeft: self.data.timeLeft - 1
         });
-        this.updateTimerDisplay();
-        
+        self.updateTimerDisplay();
+
         // 根据计时器样式更新进度显示
-        if (this.data.timerStyle === 'circle') {
-          this.drawProgressRing();
-        } else if (this.data.timerStyle === 'line') {
-          this.drawProgressLine();
+        if (self.data.timerStyle === 'circle') {
+          self.drawProgressRing();
+        } else if (self.data.timerStyle === 'line') {
+          self.drawProgressLine();
         }
       } else {
-        clearInterval(this.timer);
-        this.setData({ isRunning: false });
-        
+        clearInterval(self.timer);
+        self.setData({ isRunning: false });
+
+        // 停止背景音效
+        self.stopBackgroundSound();
+
+        // 计时结束，播放提醒音效和震动
+        self.playCompletionSound();
+        self.vibrate();
+
+        // 更新经验值和成就
+        self.updateExperience();
+        self.updateAchievements();
+
         // 计时结束，显示完成页面
-        if (this.data.currentMode === 'focus') {
+        if (self.data.currentMode === 'focus') {
           // 如果有关联任务，更新任务进度
-          if (this.data.currentTask) {
-            this.updateTaskProgress();
+          if (self.data.currentTask) {
+            self.updateTaskProgress();
           }
 
           // 检查是否设置了自动开始休息
@@ -171,17 +195,17 @@ Page({
             const todayStats = wx.getStorageSync('todayStats') || { completed: 0 };
             
             if (todayStats.completed > 0 && todayStats.completed % longBreakInterval === 0) {
-              this.switchMode({ currentTarget: { dataset: { mode: 'longBreak' } } });
-              this.startTimer(); // 自动开始计时
-              
+              self.switchMode({ currentTarget: { dataset: { mode: 'longBreak' } } });
+              self.startTimer(); // 自动开始计时
+
               wx.showToast({
                 title: '已自动开始长休息',
                 icon: 'success'
               });
             } else {
-              this.switchMode({ currentTarget: { dataset: { mode: 'shortBreak' } } });
-              this.startTimer(); // 自动开始计时
-              
+              self.switchMode({ currentTarget: { dataset: { mode: 'shortBreak' } } });
+              self.startTimer(); // 自动开始计时
+
               wx.showToast({
                 title: '已自动开始短休息',
                 icon: 'success'
@@ -195,20 +219,20 @@ Page({
           }
           
           // 更新统计信息
-          this.updateCompletedCount();
+          self.updateCompletedCount();
         } else {
           // 如果是休息结束
           wx.showToast({
             title: '休息结束',
             icon: 'success'
           });
-          
+
           // 检查是否设置了休息后自动开始专注
           const autoStartFocus = wx.getStorageSync('autoStartFocus');
           if (autoStartFocus) {
-            this.switchMode({ currentTarget: { dataset: { mode: 'focus' } } });
-            this.startTimer(); // 自动开始计时
-            
+            self.switchMode({ currentTarget: { dataset: { mode: 'focus' } } });
+            self.startTimer(); // 自动开始计时
+
             wx.showToast({
               title: '已自动开始专注',
               icon: 'success'
@@ -222,6 +246,9 @@ Page({
   pauseTimer: function() {
     clearInterval(this.timer);
     this.setData({ isRunning: false });
+
+    // 暂停背景音效
+    this.pauseBackgroundSound();
   },
   
   resetTimer: function() {
@@ -234,17 +261,18 @@ Page({
     const seconds = this.data.timeLeft % 60;
     
     this.setData({
-      timerText: `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      timerText: (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds
     });
   },
   
   drawProgressRing: function() {
     const query = wx.createSelectorQuery();
+    var self = this;
     query.select('#progressRing')
       .fields({ node: true, size: true })
-      .exec((res) => {
+      .exec(function(res) {
         // 如果不是环形样式，不执行绘制
-        if (this.data.timerStyle !== 'circle' || !res[0]) return;
+        if (self.data.timerStyle !== 'circle' || !res[0]) return;
         
         const canvas = res[0].node;
         const ctx = canvas.getContext('2d');
@@ -265,21 +293,21 @@ Page({
         const radius = res[0].width * 0.45;
         
         // 计算进度
-        const progress = (this.data.totalTime - this.data.timeLeft) / this.data.totalTime;
+        const progress = (self.data.totalTime - self.data.timeLeft) / self.data.totalTime;
         const startAngle = -0.5 * Math.PI; // 从顶部开始
         const endAngle = startAngle + (2 * Math.PI * progress);
-        
+
         // 绘制圆环底色
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.strokeStyle = '#f0f0f0';
         ctx.lineWidth = 12;
         ctx.stroke();
-        
+
         // 绘制进度弧
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.strokeStyle = this.data.themeColor;
+        ctx.strokeStyle = self.data.themeColor;
         ctx.lineWidth = 12;
         ctx.lineCap = 'round';
         ctx.stroke();
@@ -288,11 +316,12 @@ Page({
   
   drawProgressLine: function() {
     const query = wx.createSelectorQuery();
+    var self = this;
     query.select('#progressLine')
       .fields({ node: true, size: true })
-      .exec((res) => {
+      .exec(function(res) {
         // 如果不是直线样式或未找到元素，不执行绘制
-        if (this.data.timerStyle !== 'line' || !res[0]) return;
+        if (self.data.timerStyle !== 'line' || !res[0]) return;
         
         const canvas = res[0].node;
         const ctx = canvas.getContext('2d');
@@ -314,19 +343,19 @@ Page({
         const y = height / 2 - lineHeight / 2; // 线条Y轴位置
         
         // 计算进度
-        const progress = (this.data.totalTime - this.data.timeLeft) / this.data.totalTime;
+        const progress = (self.data.totalTime - self.data.timeLeft) / self.data.totalTime;
         const progressWidth = width * progress;
-        
+
         // 绘制背景线
         ctx.beginPath();
         ctx.rect(0, y, width, lineHeight);
         ctx.fillStyle = '#f0f0f0';
         ctx.fill();
-        
+
         // 绘制进度线
         ctx.beginPath();
         ctx.rect(0, y, progressWidth, lineHeight);
-        ctx.fillStyle = this.data.themeColor;
+        ctx.fillStyle = self.data.themeColor;
         ctx.fill();
       });
   },
@@ -346,15 +375,14 @@ Page({
     if (!this.data.currentTask) return;
 
     const tasks = wx.getStorageSync('tasks') || [];
-    const updatedTasks = tasks.map(task => {
+    const updatedTasks = tasks.map(function(task) {
       if (task.id === this.data.currentTask.id) {
         const completedCount = task.completedCount + 1;
         const completed = completedCount >= task.totalCount;
-        return {
-          ...task,
-          completedCount,
-          completed
-        };
+        return Object.assign({}, task, {
+          completedCount: completedCount,
+          completed: completed
+        });
       }
       return task;
     });
@@ -362,7 +390,7 @@ Page({
     wx.setStorageSync('tasks', updatedTasks);
     
     // 更新全局状态和当前页面状态
-    const updatedTask = updatedTasks.find(task => task.id === this.data.currentTask.id);
+    const updatedTask = updatedTasks.find(function(task) { return task.id === this.data.currentTask.id; }.bind(this));
     app.globalData.currentTask = updatedTask;
     this.setData({
       currentTask: updatedTask
@@ -375,9 +403,10 @@ Page({
         icon: 'success'
       });
       // 清除当前任务
-      setTimeout(() => {
+      var self = this;
+      setTimeout(function() {
         app.globalData.currentTask = null;
-        this.setData({
+        self.setData({
           currentTask: null
         });
       }, 2000);
@@ -467,7 +496,7 @@ Page({
   updateThemeColor: function(color) {
     // 更新CSS变量
     wx.getSystemInfo({
-      success: (res) => {
+      success: function() {
         const page = this.selectComponent('.container');
         if (page && page.setStyle) {
           page.setStyle({
@@ -488,5 +517,247 @@ Page({
         }
       }
     });
+  },
+
+  // 音效和震动功能
+  playButtonSound: function() {
+    // 检查是否开启音效
+    const soundEnabled = wx.getStorageSync('soundEnabled');
+    if (soundEnabled === false) return;
+
+    try {
+      // 使用轻微震动作为按钮反馈
+      wx.vibrateShort && wx.vibrateShort({
+        type: 'light'
+      });
+    } catch (e) {
+      console.log('按钮反馈失败:', e);
+    }
+  },
+
+  playCompletionSound: function() {
+    // 检查是否开启音效
+    const soundEnabled = wx.getStorageSync('soundEnabled');
+    if (soundEnabled === false) return;
+
+    try {
+      // 使用系统提示音
+      wx.showToast({
+        title: '专注完成！',
+        icon: 'success',
+        duration: 2000
+      });
+    } catch (e) {
+      console.log('完成音效播放失败:', e);
+    }
+  },
+
+  vibrate: function() {
+    // 检查是否开启震动
+    const vibrateEnabled = wx.getStorageSync('vibrateEnabled');
+    if (vibrateEnabled === false) return;
+
+    try {
+      // 长震动提醒
+      wx.vibrateLong && wx.vibrateLong({
+        success: function() {
+          console.log('震动提醒成功');
+        },
+        fail: function() {
+          console.log('震动提醒失败');
+        }
+      });
+    } catch (e) {
+      console.log('震动功能不可用:', e);
+    }
+  },
+
+  // 背景音效管理
+  initBackgroundSound: function() {
+    const backgroundSound = wx.getStorageSync('backgroundSound') || 'none';
+    const soundVolume = wx.getStorageSync('soundVolume') || 50;
+
+    this.backgroundSoundId = backgroundSound;
+    this.soundVolume = soundVolume / 100;
+  },
+
+  startBackgroundSound: function() {
+    if (this.backgroundSoundId === 'none') return;
+
+    try {
+      // 创建背景音频上下文
+      if (!this.backgroundAudio) {
+        this.backgroundAudio = wx.createInnerAudioContext();
+        this.backgroundAudio.loop = true;
+        this.backgroundAudio.volume = this.soundVolume;
+
+        // 这里可以设置不同音效的音频文件路径
+        // 由于小程序限制，我们使用模拟的方式
+        this.backgroundAudio.src = this.getSoundUrl(this.backgroundSoundId);
+      }
+
+      this.backgroundAudio.play();
+      console.log('开始播放背景音效:', this.backgroundSoundId);
+
+    } catch (e) {
+      console.log('背景音效播放失败:', e);
+    }
+  },
+
+  pauseBackgroundSound: function() {
+    if (this.backgroundAudio) {
+      this.backgroundAudio.pause();
+    }
+  },
+
+  stopBackgroundSound: function() {
+    if (this.backgroundAudio) {
+      this.backgroundAudio.stop();
+      this.backgroundAudio.destroy();
+      this.backgroundAudio = null;
+    }
+  },
+
+  getSoundUrl: function(soundId) {
+    // 这里返回对应音效的URL
+    // 在实际应用中，可以将音频文件放在云存储或CDN上
+    const soundUrls = {
+      'rain': '/audio/rain.mp3',
+      'ocean': '/audio/ocean.mp3',
+      'forest': '/audio/forest.mp3',
+      'cafe': '/audio/cafe.mp3',
+      'fireplace': '/audio/fireplace.mp3',
+      'whitenoise': '/audio/whitenoise.mp3',
+      'pinknoise': '/audio/pinknoise.mp3'
+    };
+
+    return soundUrls[soundId] || '';
+  },
+
+  // 经验值系统
+  updateExperience: function() {
+    if (this.data.currentMode !== 'focus') return;
+
+    // 计算获得的经验值
+    const focusDuration = this.data.focusDuration;
+    let expGained = Math.floor(focusDuration / 5); // 每5分钟获得1经验
+
+    // 连击奖励
+    const currentStreak = wx.getStorageSync('currentStreak') || 0;
+    if (currentStreak >= 3) {
+      expGained = Math.floor(expGained * 1.2); // 连击3天以上获得20%奖励
+    }
+    if (currentStreak >= 7) {
+      expGained = Math.floor(expGained * 1.5); // 连击7天以上获得50%奖励
+    }
+
+    // 更新经验值
+    const currentExp = wx.getStorageSync('currentExp') || 0;
+    const userLevel = wx.getStorageSync('userLevel') || 1;
+    const newExp = currentExp + expGained;
+
+    // 检查是否升级
+    const nextLevelExp = userLevel * 100;
+    if (newExp >= nextLevelExp) {
+      const newLevel = userLevel + 1;
+      const remainingExp = newExp - nextLevelExp;
+
+      wx.setStorageSync('userLevel', newLevel);
+      wx.setStorageSync('currentExp', remainingExp);
+
+      // 显示升级提示
+      wx.showModal({
+        title: '恭喜升级！',
+        content: '您已升级到 Lv.' + newLevel + '！获得了 ' + expGained + ' 经验值',
+        showCancel: false,
+        confirmText: '太棒了'
+      });
+    } else {
+      wx.setStorageSync('currentExp', newExp);
+
+      // 显示经验值获得提示
+      if (expGained > 0) {
+        wx.showToast({
+          title: '+' + expGained + ' EXP',
+          icon: 'none',
+          duration: 1500
+        });
+      }
+    }
+  },
+
+  // 成就系统
+  updateAchievements: function() {
+    if (this.data.currentMode !== 'focus') return;
+
+    // 更新专注次数相关成就
+    const totalSessions = (wx.getStorageSync('totalSessions') || 0) + 1;
+    wx.setStorageSync('totalSessions', totalSessions);
+
+    // 更新专注时长相关成就
+    const totalFocusTime = (wx.getStorageSync('totalFocusTime') || 0) + this.data.focusDuration;
+    wx.setStorageSync('totalFocusTime', totalFocusTime);
+
+    // 更新连击相关成就
+    this.updateStreak();
+
+    // 检查时间相关成就
+    this.checkTimeBasedAchievements();
+
+    // 检查完美专注成就
+    this.checkPerfectFocusAchievement();
+  },
+
+  updateStreak: function() {
+    const today = new Date().toDateString();
+    const lastFocusDate = wx.getStorageSync('lastFocusDate');
+    const currentStreak = wx.getStorageSync('currentStreak') || 0;
+
+    if (lastFocusDate !== today) {
+      // 新的一天
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastFocusDate === yesterday.toDateString()) {
+        // 连续的一天
+        const newStreak = currentStreak + 1;
+        wx.setStorageSync('currentStreak', newStreak);
+
+        // 更新最高连击
+        const maxStreak = wx.getStorageSync('maxStreak') || 0;
+        if (newStreak > maxStreak) {
+          wx.setStorageSync('maxStreak', newStreak);
+        }
+      } else {
+        // 中断了连击
+        wx.setStorageSync('currentStreak', 1);
+      }
+
+      wx.setStorageSync('lastFocusDate', today);
+    }
+  },
+
+  checkTimeBasedAchievements: function() {
+    const now = new Date();
+    const hour = now.getHours();
+
+    // 早起鸟儿成就 (6-8点)
+    if (hour >= 6 && hour < 8) {
+      const earlyBirdCount = (wx.getStorageSync('achievement_early_bird') || 0) + 1;
+      wx.setStorageSync('achievement_early_bird', earlyBirdCount);
+    }
+
+    // 夜猫子成就 (22-24点)
+    if (hour >= 22 && hour < 24) {
+      const nightOwlCount = (wx.getStorageSync('achievement_night_owl') || 0) + 1;
+      wx.setStorageSync('achievement_night_owl', nightOwlCount);
+    }
+  },
+
+  checkPerfectFocusAchievement: function() {
+    // 这里可以检查是否完整完成了专注时间（没有中途暂停太久等）
+    // 简化实现：每次完成专注都算作完美专注
+    const perfectCount = (wx.getStorageSync('achievement_perfectionist') || 0) + 1;
+    wx.setStorageSync('achievement_perfectionist', perfectCount);
   }
-}); 
+});

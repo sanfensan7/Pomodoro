@@ -1,28 +1,57 @@
-<view class="container">
+<view class="container" style="--theme-color: {{themeColor}}">
   <view class="header">
     <text class="title">任务管理</text>
-    <view class="add-icon" bindtap="toggleTaskForm">
-      <text>+</text>
+    <view class="header-actions">
+      <view class="sort-btn" bindtap="toggleSortMenu">
+        <text class="sort-icon">⇅</text>
+      </view>
+      <view class="add-icon" bindtap="toggleTaskForm">
+        <text>+</text>
+      </view>
     </view>
+  </view>
+
+  <!-- 排序菜单 -->
+  <view class="sort-menu {{showSortMenu ? 'show' : ''}}" wx:if="{{showSortMenu}}">
+    <view class="sort-option" bindtap="sortTasks" data-type="createTime">按创建时间</view>
+    <view class="sort-option" bindtap="sortTasks" data-type="priority">按优先级</view>
+    <view class="sort-option" bindtap="sortTasks" data-type="progress">按进度</view>
+    <view class="sort-option" bindtap="sortTasks" data-type="name">按名称</view>
   </view>
   
   <view class="task-list">
     <block wx:for="{{tasks}}" wx:key="id">
       <view class="task-item {{item.completed ? 'completed' : ''}}">
-        <view class="task-checkbox {{item.completed ? 'completed' : ''}}" 
+        <view class="task-checkbox {{item.completed ? 'completed' : ''}}"
               style="border-color: {{themeColor}}; {{item.completed ? 'background-color:' + themeColor : ''}}"
               data-id="{{item.id}}" bindtap="toggleTaskStatus">
           <icon wx:if="{{item.completed}}" type="success" size="16" color="#fff"></icon>
         </view>
         <view class="task-content" bindtap="startFocus" data-task="{{item}}">
-          <view class="task-title">{{item.title}}</view>
-          <view class="task-description">{{item.description}}</view>
+          <view class="task-header">
+            <view class="task-title-section">
+              <text class="task-title">{{item.title}}</text>
+              <view class="task-meta">
+                <text class="priority-badge priority-{{item.priority || 'medium'}}">{{item.priority === 'high' ? '高' : item.priority === 'low' ? '低' : '中'}}</text>
+                <text class="category-badge category-{{item.category || 'other'}}">{{item.category === 'work' ? '工作' : item.category === 'study' ? '学习' : item.category === 'life' ? '生活' : '其他'}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="task-description" wx:if="{{item.description}}">{{item.description}}</view>
           <view class="task-progress">
             <view class="progress-text">完成进度：{{item.completedCount}}/{{item.totalCount}}</view>
             <view class="start-focus" style="color: {{themeColor}}">
               <image src="/images/play.png" mode="aspectFit"></image>
               <text>开始专注</text>
             </view>
+          </view>
+        </view>
+        <view class="task-actions">
+          <view class="action-btn edit-btn" bindtap="editTask" data-task="{{item}}">
+            <text class="action-icon">✎</text>
+          </view>
+          <view class="action-btn delete-btn" bindtap="deleteTask" data-id="{{item.id}}">
+            <text class="action-icon">🗑</text>
           </view>
         </view>
       </view>
@@ -33,10 +62,10 @@
     </view>
   </view>
   
-  <!-- 添加任务表单 -->
+  <!-- 添加/编辑任务表单 -->
   <view class="task-form {{showTaskForm ? 'show' : ''}}">
     <view class="form-header">
-      <text>新任务</text>
+      <text>{{editingTask ? '编辑任务' : '新任务'}}</text>
       <view class="close-btn" bindtap="toggleTaskForm">×</view>
     </view>
     <view class="form-group">
@@ -48,12 +77,38 @@
       <textarea class="form-textarea" value="{{newTask.description}}" bindinput="inputTaskDescription" placeholder="输入任务描述"></textarea>
     </view>
     <view class="form-group">
+      <text class="form-label">优先级</text>
+      <view class="priority-selector">
+        <view class="priority-item {{newTask.priority === 'high' ? 'active' : ''}}" bindtap="setPriority" data-priority="high">
+          <text class="priority-dot high"></text>
+          <text>高</text>
+        </view>
+        <view class="priority-item {{newTask.priority === 'medium' ? 'active' : ''}}" bindtap="setPriority" data-priority="medium">
+          <text class="priority-dot medium"></text>
+          <text>中</text>
+        </view>
+        <view class="priority-item {{newTask.priority === 'low' ? 'active' : ''}}" bindtap="setPriority" data-priority="low">
+          <text class="priority-dot low"></text>
+          <text>低</text>
+        </view>
+      </view>
+    </view>
+    <view class="form-group">
+      <text class="form-label">分类标签</text>
+      <view class="tag-selector">
+        <view class="tag-item {{newTask.category === 'work' ? 'active' : ''}}" bindtap="setCategory" data-category="work">工作</view>
+        <view class="tag-item {{newTask.category === 'study' ? 'active' : ''}}" bindtap="setCategory" data-category="study">学习</view>
+        <view class="tag-item {{newTask.category === 'life' ? 'active' : ''}}" bindtap="setCategory" data-category="life">生活</view>
+        <view class="tag-item {{newTask.category === 'other' ? 'active' : ''}}" bindtap="setCategory" data-category="other">其他</view>
+      </view>
+    </view>
+    <view class="form-group">
       <text class="form-label">预计番茄数</text>
-      <slider min="1" max="10" value="{{newTask.totalCount}}" bindchange="changeTaskCount" show-value />
+      <slider min="1" max="20" value="{{newTask.totalCount}}" bindchange="changeTaskCount" show-value />
     </view>
     <view class="form-actions">
       <button class="btn-cancel" bindtap="toggleTaskForm">取消</button>
-      <button class="btn-submit" style="background-color: {{themeColor}}" bindtap="addTask">添加</button>
+      <button class="btn-submit" style="background-color: {{themeColor}}" bindtap="{{editingTask ? 'updateTask' : 'addTask'}}">{{editingTask ? '更新' : '添加'}}</button>
     </view>
   </view>
   

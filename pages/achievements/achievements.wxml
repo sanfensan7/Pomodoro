@@ -1,0 +1,118 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <view class="header">
+    <navigator url="/pages/settings/settings" open-type="navigateBack" hover-class="none">
+      <view class="back-icon">
+        <text>←</text>
+      </view>
+    </navigator>
+    <text class="title">成就系统</text>
+  </view>
+
+  <!-- 用户等级信息 -->
+  <view class="level-card">
+    <view class="level-info">
+      <view class="level-badge" style="background-color: {{themeColor}}">
+        <text class="level-text">Lv.{{userLevel}}</text>
+      </view>
+      <view class="level-details">
+        <view class="level-title">专注等级</view>
+        <view class="exp-info">{{currentExp}}/{{nextLevelExp}} EXP</view>
+      </view>
+    </view>
+    <view class="exp-bar">
+      <view class="exp-progress" 
+            style="width: {{(currentExp/nextLevelExp*100)}}%; background-color: {{themeColor}}"></view>
+    </view>
+  </view>
+
+  <!-- 统计数据 -->
+  <view class="stats-grid">
+    <view class="stat-item">
+      <view class="stat-value">{{totalSessions}}</view>
+      <view class="stat-label">专注次数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{utils.formatTime(totalFocusTime)}}</view>
+      <view class="stat-label">专注时长</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{currentStreak}}</view>
+      <view class="stat-label">当前连击</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{maxStreak}}</view>
+      <view class="stat-label">最高连击</view>
+    </view>
+  </view>
+
+  <!-- 成就分类 -->
+  <view class="category-tabs">
+    <block wx:for="{{categories}}" wx:key="id">
+      <view class="category-tab {{currentCategory === item.id ? 'active' : ''}}"
+            style="{{currentCategory === item.id ? 'color: ' + themeColor + '; border-color: ' + themeColor : ''}}"
+            bindtap="switchCategory"
+            data-id="{{item.id}}">
+        <text class="category-name">{{item.name}}</text>
+        <text class="category-count">({{item.count}})</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 成就列表 -->
+  <view class="achievements-list">
+    <block wx:for="{{utils.getFilteredAchievements(achievements, currentCategory)}}" wx:key="id">
+      <view class="achievement-item {{item.unlocked ? 'unlocked' : 'locked'}}">
+        <view class="achievement-icon {{item.unlocked ? 'unlocked' : ''}}">
+          {{item.icon}}
+        </view>
+        <view class="achievement-info">
+          <view class="achievement-title">{{item.title}}</view>
+          <view class="achievement-description">{{item.description}}</view>
+          <view class="achievement-progress">
+            <view class="progress-bar">
+              <view class="progress-fill" 
+                    style="width: {{(item.progress/item.target*100)}}%; background-color: {{themeColor}}"></view>
+            </view>
+            <view class="progress-text">{{item.progress}}/{{item.target}}</view>
+          </view>
+        </view>
+        <view class="achievement-status">
+          <view class="status-badge {{item.unlocked ? 'unlocked' : 'locked'}}"
+                style="{{item.unlocked ? 'background-color: ' + themeColor : ''}}">
+            {{item.unlocked ? '✓' : '🔒'}}
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view class="tips" wx:if="{{utils.getFilteredAchievements(achievements, currentCategory).length === 0}}">
+    <view class="tips-icon">🎯</view>
+    <view class="tips-text">暂无{{currentCategory === 'unlocked' ? '已解锁' : '未解锁'}}的成就</view>
+  </view>
+</view>
+
+<wxs module="utils">
+  var formatTime = function(minutes) {
+    var hours = Math.floor(minutes / 60);
+    var mins = minutes % 60;
+    if (hours > 0) {
+      return hours + '小时' + mins + '分钟';
+    }
+    return mins + '分钟';
+  };
+  
+  var getFilteredAchievements = function(achievements, currentCategory) {
+    if (currentCategory === 'unlocked') {
+      return achievements.filter(function(a) { return a.unlocked; });
+    } else if (currentCategory === 'locked') {
+      return achievements.filter(function(a) { return !a.unlocked; });
+    }
+    return achievements;
+  };
+  
+  module.exports = {
+    formatTime: formatTime,
+    getFilteredAchievements: getFilteredAchievements
+  };
+</wxs>

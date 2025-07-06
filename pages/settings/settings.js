@@ -28,7 +28,11 @@ Page({
     breakOptions: [5, 10, 15, 20, 25, 30],
     intervalOptions: [2, 3, 4, 5, 6],
     autoStartBreak: true,
-    autoStartFocus: false
+    autoStartFocus: false,
+
+    // 提醒设置
+    soundEnabled: true,
+    vibrateEnabled: true
   },
 
   onLoad: function() {
@@ -55,6 +59,8 @@ Page({
     const currentTheme = wx.getStorageSync('currentTheme') || 'red';
     const autoStartBreak = wx.getStorageSync('autoStartBreak');
     const autoStartFocus = wx.getStorageSync('autoStartFocus');
+    const soundEnabled = wx.getStorageSync('soundEnabled');
+    const vibrateEnabled = wx.getStorageSync('vibrateEnabled');
     
     // 找到对应的索引
     const focusDurationIndex = this.data.durationOptions.indexOf(focusDuration);
@@ -72,7 +78,9 @@ Page({
       themeColorRGB: hexToRgb(themeColor),
       currentTheme: currentTheme,
       autoStartBreak: autoStartBreak === false ? false : true,
-      autoStartFocus: autoStartFocus === true ? true : false
+      autoStartFocus: autoStartFocus === true ? true : false,
+      soundEnabled: soundEnabled !== null ? soundEnabled : true,
+      vibrateEnabled: vibrateEnabled !== null ? vibrateEnabled : true
     });
   },
   
@@ -135,6 +143,41 @@ Page({
       autoStartFocus: e.detail.value
     });
     this.saveSettings();
+  },
+
+  toggleSound: function(e) {
+    const value = e.detail.value;
+    this.setData({
+      soundEnabled: value
+    });
+    wx.setStorageSync('soundEnabled', value);
+
+    // 播放测试音效
+    if (value) {
+      wx.showToast({
+        title: '音效已开启',
+        icon: 'success'
+      });
+    }
+  },
+
+  toggleVibrate: function(e) {
+    const value = e.detail.value;
+    this.setData({
+      vibrateEnabled: value
+    });
+    wx.setStorageSync('vibrateEnabled', value);
+
+    // 测试震动
+    if (value) {
+      wx.vibrateShort && wx.vibrateShort({
+        type: 'light'
+      });
+      wx.showToast({
+        title: '震动已开启',
+        icon: 'success'
+      });
+    }
   },
   
   changeTheme: function(e) {
