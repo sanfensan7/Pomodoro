@@ -136,7 +136,7 @@ Page({
         messages: [
           {
             role: 'system',
-            content: '你是一位资深的周易算命大师，精通八字、五行、易经卦象。你的回答要客观均衡，既要指出有利的方面，也要提醒可能的挑战和注意事项。不要只说好话，要给出实用的建议。回答要通俗易懂，避免过于深奥的术语。'
+            content: '你是一位资深的周易算命大师，精通八字、五行、易经卦象。你必须针对用户的具体问题给出明确、直接的回答，不能模糊回避。你的分析要客观均衡，既要指出有利的方面，也要明确指出可能的挑战和风险。不要只说好话，要给出具体可行的建议和预测。回答要通俗易懂，避免过于深奥的术语。对于用户询问的具体事情（如事业、感情、财运等），你必须给出明确的判断和建议，不能用"因人而异"、"需要综合考虑"等模糊表述来回避。'
           },
           {
             role: 'user',
@@ -172,26 +172,28 @@ Page({
 
   // 构建提示词
   buildPrompt: function(userInfo) {
-    var prompt = '请为以下信息进行周易算命分析：\n\n';
+    var prompt = '请为以下信息进行周易算命分析，必须给出明确具体的回答：\n\n';
     prompt += '姓名：' + userInfo.name + '\n';
     prompt += '性别：' + (userInfo.gender === 'male' ? '男' : '女') + '\n';
     prompt += '出生日期：' + userInfo.birthDate + '\n';
     prompt += '出生时辰：' + userInfo.birthTime + '\n';
     prompt += '占卜问题：' + userInfo.question + '\n\n';
-    
-    prompt += '请从以下几个方面进行分析：\n';
-    prompt += '1. 八字命理分析（五行属性、命格特点）\n';
-    prompt += '2. 针对所问问题的具体分析\n';
-    prompt += '3. 有利因素和机遇\n';
-    prompt += '4. 需要注意的挑战和风险\n';
-    prompt += '5. 实用建议和改善方法\n';
-    prompt += '6. 总体运势评价\n\n';
-    
-    prompt += '要求：\n';
-    prompt += '- 客观均衡，不要只说好话\n';
-    prompt += '- 语言通俗易懂，避免过于专业的术语\n';
-    prompt += '- 给出具体可行的建议\n';
-    prompt += '- 每个方面都要有具体内容，不要泛泛而谈';
+
+    prompt += '请从以下几个方面进行具体分析，每个方面都要给出明确的判断和预测：\n';
+    prompt += '1. 八字命理分析：根据出生信息分析五行属性、命格特点，给出具体的性格特征和天赋能力\n';
+    prompt += '2. 针对问题的直接回答：对用户提出的具体问题给出明确的判断，是好是坏，成功概率如何，什么时候会有结果\n';
+    prompt += '3. 有利因素：明确指出哪些方面对用户有利，什么时候是最佳时机\n';
+    prompt += '4. 不利因素：直接指出可能遇到的具体困难和风险，什么时候需要特别小心\n';
+    prompt += '5. 具体建议：给出可操作的改善方法，包括行为建议、时间选择、方位选择等\n';
+    prompt += '6. 明确预测：对未来1-3个月的运势给出具体预测，包括可能发生的事件\n\n';
+
+    prompt += '严格要求：\n';
+    prompt += '- 必须针对用户的具体问题给出明确答案，不能模糊回避\n';
+    prompt += '- 要有具体的时间预测（如"3个月内"、"年底前"等）\n';
+    prompt += '- 要给出成功概率的大致判断（如"成功概率较高"、"需要谨慎"等）\n';
+    prompt += '- 不能用"因人而异"、"需要综合考虑"等模糊表述\n';
+    prompt += '- 语言要通俗易懂，给出的建议要具体可行\n';
+    prompt += '- 既要指出好的方面，也要明确警示风险';
 
     return prompt;
   },
@@ -222,24 +224,24 @@ Page({
     // 简单的文本解析，提取各个部分
     var lines = response.split('\n');
     var currentSection = '';
-    
+
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
       if (!line) continue;
 
-      if (line.includes('八字') || line.includes('命理')) {
+      if (line.includes('八字') || line.includes('命理') || line.includes('1.')) {
         currentSection = 'bazi';
-      } else if (line.includes('问题') || line.includes('分析')) {
+      } else if (line.includes('问题') || line.includes('直接回答') || line.includes('2.')) {
         currentSection = 'analysis';
-      } else if (line.includes('有利') || line.includes('机遇') || line.includes('优势')) {
+      } else if (line.includes('有利') || line.includes('机遇') || line.includes('优势') || line.includes('3.')) {
         currentSection = 'advantages';
-      } else if (line.includes('挑战') || line.includes('风险') || line.includes('注意')) {
+      } else if (line.includes('不利') || line.includes('挑战') || line.includes('风险') || line.includes('注意') || line.includes('4.')) {
         currentSection = 'challenges';
-      } else if (line.includes('建议') || line.includes('改善')) {
+      } else if (line.includes('建议') || line.includes('改善') || line.includes('具体建议') || line.includes('5.')) {
         currentSection = 'suggestions';
-      } else if (line.includes('总体') || line.includes('运势')) {
+      } else if (line.includes('预测') || line.includes('运势') || line.includes('总体') || line.includes('6.')) {
         currentSection = 'overall';
-      } else if (currentSection && !line.match(/^\d+\./)) {
+      } else if (currentSection && !line.match(/^\d+\./) && !line.includes('要求') && !line.includes('严格')) {
         sections[currentSection] += line + '\n';
       }
     }
@@ -256,21 +258,35 @@ Page({
   extractSummary: function(response) {
     var lines = response.split('\n');
     var summary = '';
-    
-    // 查找包含总结性词汇的句子
+
+    // 查找包含关键预测信息的句子
+    var keywords = ['总体', '综合', '整体', '预测', '概率', '成功', '建议', '结果', '未来'];
+
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
-      if (line.includes('总体') || line.includes('综合') || line.includes('整体')) {
-        summary = line;
-        break;
+      if (!line || line.length < 10) continue;
+
+      for (var j = 0; j < keywords.length; j++) {
+        if (line.includes(keywords[j]) && line.length > 20) {
+          summary = line;
+          break;
+        }
+      }
+      if (summary) break;
+    }
+
+    // 如果没找到合适的总结，查找最后一个有意义的句子
+    if (!summary) {
+      for (var i = lines.length - 1; i >= 0; i--) {
+        var line = lines[i].trim();
+        if (line && line.length > 15 && !line.includes('要求') && !line.includes('严格')) {
+          summary = line;
+          break;
+        }
       }
     }
 
-    if (!summary && lines.length > 0) {
-      summary = lines[lines.length - 1].trim();
-    }
-
-    return summary || '运势变化无常，关键在于把握机遇，化解挑战。';
+    return summary || '根据您的八字分析，需要把握时机，谨慎行事，方能趋吉避凶。';
   },
 
   // 保存算命记录

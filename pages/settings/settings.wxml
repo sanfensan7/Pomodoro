@@ -64,6 +64,13 @@
         <switch checked="{{autoStartFocus}}" bindchange="toggleAutoStartFocus" color="{{themeColor}}"/>
       </view>
     </view>
+
+    <view class="settings-item">
+      <view class="item-label">专注时保持屏幕常亮</view>
+      <view class="item-value">
+        <switch checked="{{keepScreenOn}}" bindchange="toggleKeepScreenOn" color="{{themeColor}}"/>
+      </view>
+    </view>
   </view>
 
   <view class="settings-group">

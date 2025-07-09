@@ -30,6 +30,7 @@ Page({
     intervalOptions: [2, 3, 4, 5, 6],
     autoStartBreak: true,
     autoStartFocus: false,
+    keepScreenOn: true,
 
     // 提醒设置
     vibrateEnabled: true,
@@ -72,6 +73,7 @@ Page({
     const currentTheme = wx.getStorageSync('currentTheme') || 'red';
     const autoStartBreak = wx.getStorageSync('autoStartBreak');
     const autoStartFocus = wx.getStorageSync('autoStartFocus');
+    const keepScreenOn = wx.getStorageSync('keepScreenOn');
     const vibrateEnabled = wx.getStorageSync('vibrateEnabled');
     const popupEnabled = wx.getStorageSync('popupEnabled');
     const repeatIndex = wx.getStorageSync('repeatIndex') || 1;
@@ -94,6 +96,7 @@ Page({
       currentTheme: currentTheme,
       autoStartBreak: autoStartBreak === false ? false : true,
       autoStartFocus: autoStartFocus === true ? true : false,
+      keepScreenOn: keepScreenOn !== null ? keepScreenOn : true,
       vibrateEnabled: vibrateEnabled !== null ? vibrateEnabled : true,
       popupEnabled: popupEnabled !== null ? popupEnabled : true,
       repeatIndex: repeatIndex,
@@ -113,6 +116,7 @@ Page({
     wx.setStorageSync('currentTheme', this.data.currentTheme);
     wx.setStorageSync('autoStartBreak', this.data.autoStartBreak);
     wx.setStorageSync('autoStartFocus', this.data.autoStartFocus);
+    wx.setStorageSync('keepScreenOn', this.data.keepScreenOn);
     wx.setStorageSync('vibrateEnabled', this.data.vibrateEnabled);
     wx.setStorageSync('popupEnabled', this.data.popupEnabled);
     wx.setStorageSync('repeatIndex', this.data.repeatIndex);
@@ -164,6 +168,18 @@ Page({
       autoStartFocus: e.detail.value
     });
     this.saveSettings();
+  },
+
+  toggleKeepScreenOn: function(e) {
+    this.setData({
+      keepScreenOn: e.detail.value
+    });
+    this.saveSettings();
+
+    wx.showToast({
+      title: e.detail.value ? '已启用屏幕常亮' : '已关闭屏幕常亮',
+      icon: 'success'
+    });
   },
 
   toggleVibrate: function(e) {

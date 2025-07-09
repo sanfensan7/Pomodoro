@@ -81,10 +81,52 @@ Page({
       clearInterval(this.timer);
     }
 
+    // 取消屏幕常亮
+    wx.setKeepScreenOn({
+      keepScreenOn: false,
+      success: function() {
+        console.log('页面卸载，屏幕常亮已取消');
+      },
+      fail: function(error) {
+        console.error('取消屏幕常亮失败:', error);
+      }
+    });
+
     // 停止背景音效
     this.stopBackgroundSound();
   },
-  
+
+  onHide: function() {
+    // 页面隐藏时取消屏幕常亮，避免在后台时仍保持常亮
+    wx.setKeepScreenOn({
+      keepScreenOn: false,
+      success: function() {
+        console.log('页面隐藏，屏幕常亮已取消');
+      },
+      fail: function(error) {
+        console.error('取消屏幕常亮失败:', error);
+      }
+    });
+  },
+
+  onShow: function() {
+    // 页面显示时，如果正在计时且启用了屏幕常亮则重新设置
+    if (this.data.isRunning) {
+      var keepScreenOn = wx.getStorageSync('keepScreenOn');
+      if (keepScreenOn !== false) { // 默认启用
+        wx.setKeepScreenOn({
+          keepScreenOn: true,
+          success: function() {
+            console.log('页面显示，屏幕常亮已恢复');
+          },
+          fail: function(error) {
+            console.error('设置屏幕常亮失败:', error);
+          }
+        });
+      }
+    }
+  },
+
   onReady: function() {
     // 绘制初始进度环
     this.drawProgressRing();
@@ -156,6 +198,20 @@ Page({
   startTimer: function() {
     this.setData({ isRunning: true });
 
+    // 根据设置决定是否保持屏幕常亮
+    var keepScreenOn = wx.getStorageSync('keepScreenOn');
+    if (keepScreenOn !== false) { // 默认启用
+      wx.setKeepScreenOn({
+        keepScreenOn: true,
+        success: function() {
+          console.log('屏幕保持常亮设置成功');
+        },
+        fail: function(error) {
+          console.error('屏幕保持常亮设置失败:', error);
+        }
+      });
+    }
+
     // 开始播放背景音效
     this.startBackgroundSound();
 
@@ -176,6 +232,17 @@ Page({
       } else {
         clearInterval(self.timer);
         self.setData({ isRunning: false });
+
+        // 取消屏幕常亮
+        wx.setKeepScreenOn({
+          keepScreenOn: false,
+          success: function() {
+            console.log('计时结束，屏幕常亮已取消');
+          },
+          fail: function(error) {
+            console.error('取消屏幕常亮失败:', error);
+          }
+        });
 
         // 停止背景音效
         self.stopBackgroundSound();
@@ -254,12 +321,35 @@ Page({
     clearInterval(this.timer);
     this.setData({ isRunning: false });
 
+    // 取消屏幕常亮
+    wx.setKeepScreenOn({
+      keepScreenOn: false,
+      success: function() {
+        console.log('屏幕常亮已取消');
+      },
+      fail: function(error) {
+        console.error('取消屏幕常亮失败:', error);
+      }
+    });
+
     // 暂停背景音效
     this.pauseBackgroundSound();
   },
   
   resetTimer: function() {
     clearInterval(this.timer);
+
+    // 取消屏幕常亮
+    wx.setKeepScreenOn({
+      keepScreenOn: false,
+      success: function() {
+        console.log('重置计时器，屏幕常亮已取消');
+      },
+      fail: function(error) {
+        console.error('取消屏幕常亮失败:', error);
+      }
+    });
+
     this.initTimer();
   },
   
