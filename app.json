@@ -7,7 +7,9 @@
     "pages/complete/complete",
     "pages/icon-preview",
     "pages/sounds/sounds",
-    "pages/achievements/achievements"
+    "pages/achievements/achievements",
+    "pages/divination/divination",
+    "pages/divination-history/divination-history"
   ],
   "window": {
     "backgroundTextStyle": "light",

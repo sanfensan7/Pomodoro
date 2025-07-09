@@ -183,7 +183,20 @@
       </view>
     </view>
   </view>
-  
+
+  <view class="settings-group">
+    <view class="settings-title">娱乐功能</view>
+
+    <navigator url="/pages/divination/divination" hover-class="none">
+      <view class="settings-item">
+        <view class="item-icon">🔮</view>
+        <view class="item-label">周易算命</view>
+        <view class="item-desc">AI智能算命，探索命运奥秘</view>
+        <view class="item-arrow">></view>
+      </view>
+    </navigator>
+  </view>
+
   <view class="settings-group">
     <view class="settings-title">关于</view>
 
