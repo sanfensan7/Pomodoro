@@ -80,7 +80,7 @@ Page({
   },
 
   selectSound: function(e) {
-    const soundId = e.currentTarget.dataset.id;
+    var soundId = e.currentTarget.dataset.id;
     
     // 停止当前播放的音效
     this.stopCurrentSound();
@@ -151,7 +151,7 @@ Page({
   },
 
   changeVolume: function(e) {
-    const volume = e.detail.value;
+    var volume = e.detail.value;
     this.setData({
       volume: volume
     });
@@ -168,5 +168,15 @@ Page({
   onUnload: function() {
     // 页面卸载时停止音效
     this.stopCurrentSound();
+  },
+
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    return shareHelper.getShareAppMessageConfig('total', '/pages/sounds/sounds');
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    return shareHelper.getShareTimelineConfig('total');
   }
 });

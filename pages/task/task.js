@@ -170,14 +170,15 @@ Page({
       return;
     }
 
+    var self = this;
     var tasks = this.data.tasks.map(function(task) {
-      if (task.id === this.data.editingTask.id) {
+      if (task.id === self.data.editingTask.id) {
         return Object.assign({}, task, {
-          title: this.data.newTask.title,
-          description: this.data.newTask.description,
-          totalCount: this.data.newTask.totalCount,
-          priority: this.data.newTask.priority,
-          category: this.data.newTask.category
+          title: self.data.newTask.title,
+          description: self.data.newTask.description,
+          totalCount: self.data.newTask.totalCount,
+          priority: self.data.newTask.priority,
+          category: self.data.newTask.category
         });
       }
       return task;
@@ -199,15 +200,16 @@ Page({
 
   deleteTask: function(e) {
     var taskId = e.currentTarget.dataset.id;
+    var self = this;
 
     wx.showModal({
       title: '确认删除',
       content: '确定要删除这个任务吗？',
       success: function(res) {
         if (res.confirm) {
-          var tasks = this.data.tasks.filter(function(task) { return task.id !== taskId; });
+          var tasks = self.data.tasks.filter(function(task) { return task.id !== taskId; });
 
-          this.setData({ tasks });
+          self.setData({ tasks: tasks });
           wx.setStorageSync('tasks', tasks);
 
           wx.showToast({
