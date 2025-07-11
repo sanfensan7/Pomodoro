@@ -5,11 +5,9 @@
     "pages/stats/stats",
     "pages/settings/settings",
     "pages/complete/complete",
-    "pages/icon-preview",
     "pages/sounds/sounds",
     "pages/achievements/achievements",
-    "pages/divination/divination",
-    "pages/divination-history/divination-history"
+    "pages/puzzle/puzzle"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -25,27 +23,19 @@
     "list": [
       {
         "pagePath": "pages/focus/focus",
-        "text": "专注",
-        "iconPath": "images/clock.png",
-        "selectedIconPath": "images/clock-active.png"
+        "text": "专注"
       },
       {
         "pagePath": "pages/task/task",
-        "text": "任务",
-        "iconPath": "images/task.png",
-        "selectedIconPath": "images/task-active.png"
+        "text": "任务"
       },
       {
         "pagePath": "pages/stats/stats",
-        "text": "统计",
-        "iconPath": "images/stats.png",
-        "selectedIconPath": "images/stats-active.png"
+        "text": "统计"
       },
       {
         "pagePath": "pages/settings/settings",
-        "text": "设置",
-        "iconPath": "images/settings.png",
-        "selectedIconPath": "images/settings-active.png"
+        "text": "设置"
       }
     ]
   },

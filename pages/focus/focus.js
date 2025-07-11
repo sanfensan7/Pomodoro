@@ -584,11 +584,7 @@ Page({
     });
   },
   
-  navigateToSettings: function() {
-    wx.navigateTo({
-      url: '/pages/settings/settings'
-    });
-  },
+
 
   updateThemeColor: function(color) {
     // 更新CSS变量

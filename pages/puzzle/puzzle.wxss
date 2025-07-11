@@ -1,0 +1,405 @@
+.container {
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  --theme-color: #ff6b6b;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 30rpx;
+  background: var(--theme-color);
+  color: white;
+}
+
+.back-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.back-icon image {
+  width: 100%;
+  height: 100%;
+  filter: brightness(0) invert(1);
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.placeholder {
+  width: 40rpx;
+}
+
+/* 游戏菜单 */
+.game-menu {
+  padding: 30rpx 30rpx 40rpx 30rpx;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.game-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.game-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.game-desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.difficulty-section, .records-section {
+  margin-bottom: 40rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.difficulty-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+}
+
+.difficulty-item {
+  background: white;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  padding: 25rpx;
+  transition: all 0.3s ease;
+}
+
+.difficulty-item.active {
+  border-color: var(--theme-color);
+  background: linear-gradient(135deg, var(--theme-color), #ff8e8e);
+  color: white;
+}
+
+.difficulty-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.difficulty-record {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+.start-btn {
+  width: 100%;
+  padding: 25rpx;
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 40rpx;
+}
+
+.records-list {
+  background: white;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 25rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-difficulty {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.record-stats {
+  display: flex;
+  gap: 15rpx;
+}
+
+.record-moves, .record-time {
+  font-size: 24rpx;
+  color: var(--theme-color);
+  font-weight: 600;
+}
+
+.no-record {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 游戏界面 */
+.game-playing {
+  padding: 20rpx 25rpx 30rpx 25rpx;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-around;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border-radius: 16rpx;
+  padding: 30rpx 25rpx;
+  margin-bottom: 25rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
+  border: 1rpx solid #e9ecef;
+}
+
+.info-item {
+  text-align: center;
+  position: relative;
+}
+
+.info-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -15rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rpx;
+  height: 40rpx;
+  background: #e0e0e0;
+}
+
+.info-label {
+  font-size: 24rpx;
+  color: #6c757d;
+  margin-bottom: 8rpx;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--theme-color);
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+}
+
+.puzzle-container {
+  display: flex;
+  justify-content: center;
+  margin: 20rpx 0 30rpx 0;
+  padding: 0 10rpx;
+}
+
+.puzzle-grid {
+  display: grid;
+  gap: 6rpx;
+  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+  border-radius: 16rpx;
+  padding: 8rpx;
+  width: 540rpx;
+  height: 540rpx;
+  max-width: 75vw;
+  max-height: 75vw;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  border: 2rpx solid #ddd;
+}
+
+.puzzle-tile {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  min-height: 80rpx;
+  border: 1rpx solid #e9ecef;
+  position: relative;
+}
+
+.puzzle-tile.empty {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  border: 1rpx dashed #bbb;
+}
+
+.puzzle-tile:not(.empty):active {
+  transform: scale(0.92) translateY(2rpx);
+  background: linear-gradient(135deg, #e3f2fd, #f0f4ff);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+
+.puzzle-tile:not(.empty):hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.2);
+}
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+  margin-top: 10rpx;
+}
+
+.control-row {
+  display: flex;
+  gap: 15rpx;
+}
+
+.control-btn {
+  flex: 1;
+  padding: 24rpx 20rpx;
+  border: none;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn.full-width {
+  width: 100%;
+}
+
+.control-btn.primary {
+  background: linear-gradient(135deg, var(--theme-color), #ff8e8e);
+  color: white;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 107, 0.3);
+}
+
+.control-btn.secondary {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  color: var(--theme-color);
+  border: 2rpx solid var(--theme-color);
+}
+
+.control-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 完成界面 */
+.game-completed {
+  padding: 30rpx 30rpx 40rpx 30rpx;
+  text-align: center;
+}
+
+.completion-animation {
+  margin-bottom: 40rpx;
+}
+
+.success-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+  animation: bounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20rpx); }
+}
+
+.success-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.completion-stats {
+  background: white;
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--theme-color);
+}
+
+.puzzle-container.completed .puzzle-grid {
+  width: 400rpx;
+  height: 400rpx;
+}
+
+.puzzle-tile.completed {
+  background: linear-gradient(135deg, var(--theme-color), #ff8e8e);
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+}
+
+.puzzle-tile.completed.empty {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.completion-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 30rpx;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 25rpx;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.action-btn.primary {
+  background: var(--theme-color);
+  color: white;
+}
+
+.action-btn.secondary {
+  background: white;
+  color: var(--theme-color);
+  border: 2rpx solid var(--theme-color);
+}

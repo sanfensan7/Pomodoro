@@ -194,11 +194,11 @@
   <view class="settings-group">
     <view class="settings-title">娱乐功能</view>
 
-    <navigator url="/pages/divination/divination" hover-class="none">
+    <navigator url="/pages/puzzle/puzzle" hover-class="none">
       <view class="settings-item">
-        <view class="item-icon">🔮</view>
-        <view class="item-label">周易算命</view>
-        <view class="item-desc">AI智能算命，探索命运奥秘</view>
+        <view class="item-icon">🧩</view>
+        <view class="item-label">拼图游戏</view>
+        <view class="item-desc">数字拼图，休息时的益智游戏</view>
         <view class="item-arrow">></view>
       </view>
     </navigator>
@@ -209,18 +209,10 @@
 
     <view class="settings-item">
       <view class="item-label">版本</view>
-      <view class="item-value" style="color: {{themeColor}}">1.2.0</view>
+      <view class="item-value" style="color: {{themeColor}}">1.2.1</view>
     </view>
 
-    <view class="settings-item" bindtap="shareToFriend">
-      <view class="item-label">
-        <text class="share-icon">📤</text>
-        <text>分享给好友</text>
-      </view>
-      <view class="item-value">
-        <text class="item-arrow">></text>
-      </view>
-    </view>
+
 
     <button class="feedback-btn" open-type="feedback">意见反馈</button>
   </view>

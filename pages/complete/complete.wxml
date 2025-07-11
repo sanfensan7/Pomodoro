@@ -37,6 +37,14 @@
         </view>
         <view class="suggestion-text">闭眼休息一会</view>
       </view>
+      <navigator url="/pages/puzzle/puzzle" hover-class="none">
+        <view class="suggestion-item">
+          <view class="suggestion-icon">
+            <text class="suggestion-emoji">🧩</text>
+          </view>
+          <view class="suggestion-text">玩个拼图游戏</view>
+        </view>
+      </navigator>
     </view>
   </view>
   

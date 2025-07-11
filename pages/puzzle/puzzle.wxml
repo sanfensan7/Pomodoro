@@ -1,0 +1,149 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <view class="header">
+    <navigator url="/pages/settings/settings" open-type="navigateBack" hover-class="none">
+      <view class="back-icon">
+        <image src="/images/back.png" mode="aspectFit"></image>
+      </view>
+    </navigator>
+    <text class="title">拼图游戏</text>
+    <view class="placeholder"></view>
+  </view>
+
+  <!-- 游戏菜单 -->
+  <view class="game-menu" wx:if="{{gameState === 'menu'}}">
+    <view class="menu-header">
+      <view class="game-icon">🧩</view>
+      <view class="game-title">数字拼图</view>
+      <view class="game-desc">移动数字方块，按顺序排列完成拼图</view>
+    </view>
+
+    <view class="difficulty-section">
+      <view class="section-title">选择难度</view>
+      <view class="difficulty-options">
+        <block wx:for="{{difficultyOptions}}" wx:key="value">
+          <view class="difficulty-item {{difficulty === item.value ? 'active' : ''}}"
+                bindtap="selectDifficulty"
+                data-difficulty="{{item.value}}">
+            <view class="difficulty-label">{{item.label}}</view>
+            <view class="difficulty-record" wx:if="{{bestRecords[item.value].moves}}">
+              <text class="record-text">最佳：{{bestRecords[item.value].moves}}步</text>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <button class="start-btn" bindtap="startGame">
+      开始游戏
+    </button>
+
+    <view class="records-section">
+      <view class="section-title">最佳记录</view>
+      <view class="records-list">
+        <block wx:for="{{difficultyOptions}}" wx:key="value">
+          <view class="record-item">
+            <view class="record-difficulty">{{item.label}}</view>
+            <view class="record-stats" wx:if="{{bestRecords[item.value].moves}}">
+              <text class="record-moves">{{bestRecords[item.value].moves}}步</text>
+              <text class="record-time">{{bestRecords[item.value].time}}秒</text>
+            </view>
+            <view class="record-stats" wx:else>
+              <text class="no-record">暂无记录</text>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- 游戏界面 -->
+  <view class="game-playing" wx:if="{{gameState === 'playing'}}">
+    <view class="game-info">
+      <view class="info-item">
+        <view class="info-label">步数</view>
+        <view class="info-value">{{moves}}</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">时间</view>
+        <view class="info-value">{{gameTime}}s</view>
+      </view>
+      <view class="info-item">
+        <view class="info-label">难度</view>
+        <view class="info-value">{{puzzleSize}}×{{puzzleSize}}</view>
+      </view>
+    </view>
+
+    <view class="puzzle-container">
+      <view class="puzzle-grid" style="grid-template-columns: repeat({{puzzleSize}}, 1fr);">
+        <block wx:for="{{puzzleGrid}}" wx:for-index="rowIndex" wx:key="rowIndex">
+          <block wx:for="{{item}}" wx:for-index="colIndex" wx:for-item="cellValue" wx:key="colIndex">
+            <view class="puzzle-tile {{cellValue === 0 ? 'empty' : ''}}"
+                  bindtap="moveTile"
+                  data-row="{{rowIndex}}"
+                  data-col="{{colIndex}}">
+              <text wx:if="{{cellValue !== 0}}">{{cellValue}}</text>
+            </view>
+          </block>
+        </block>
+      </view>
+    </view>
+
+    <view class="game-controls">
+      <view class="control-row">
+        <button class="control-btn secondary" bindtap="pauseGame">
+          {{isGameActive ? '暂停' : '继续'}}
+        </button>
+        <button class="control-btn secondary" bindtap="restartGame">
+          重新开始
+        </button>
+      </view>
+      <button class="control-btn primary full-width" bindtap="backToMenu">
+        返回菜单
+      </button>
+    </view>
+  </view>
+
+  <!-- 完成界面 -->
+  <view class="game-completed" wx:if="{{gameState === 'completed'}}">
+    <view class="completion-animation">
+      <view class="success-icon">🎉</view>
+      <view class="success-title">恭喜完成！</view>
+    </view>
+
+    <view class="completion-stats">
+      <view class="stat-item">
+        <view class="stat-label">完成时间</view>
+        <view class="stat-value">{{gameTime}}秒</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-label">使用步数</view>
+        <view class="stat-value">{{moves}}步</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-label">难度等级</view>
+        <view class="stat-value">{{puzzleSize}}×{{puzzleSize}}</view>
+      </view>
+    </view>
+
+    <view class="puzzle-container completed">
+      <view class="puzzle-grid" style="grid-template-columns: repeat({{puzzleSize}}, 1fr);">
+        <block wx:for="{{puzzleGrid}}" wx:for-index="rowIndex" wx:key="rowIndex">
+          <block wx:for="{{item}}" wx:for-index="colIndex" wx:for-item="cellValue" wx:key="colIndex">
+            <view class="puzzle-tile completed {{cellValue === 0 ? 'empty' : ''}}">
+              <text wx:if="{{cellValue !== 0}}">{{cellValue}}</text>
+            </view>
+          </block>
+        </block>
+      </view>
+    </view>
+
+    <view class="completion-actions">
+      <button class="action-btn secondary" bindtap="startGame">
+        再来一局
+      </button>
+      <button class="action-btn primary" bindtap="backToMenu">
+        返回菜单
+      </button>
+    </view>
+  </view>
+</view>

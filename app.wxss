@@ -51,4 +51,16 @@ button::after {
 @keyframes scaleIn {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
-} 
+}
+
+/* 导航栏文字大小调整 */
+.uni-tabbar-item .uni-tabbar-item-text {
+  font-size: 32rpx !important;
+  font-weight: 500;
+}
+
+/* 兼容不同版本的tabbar样式 */
+.tabbar-item-text {
+  font-size: 32rpx !important;
+  font-weight: 500;
+}

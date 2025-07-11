@@ -1,8 +1,5 @@
 <view class="container" style="--theme-color: {{themeColor}}">
   <view class="header">
-    <view class="settings-icon" bindtap="navigateToSettings">
-      <image src="/images/settings.png" mode="aspectFit"></image>
-    </view>
   </view>
   
   <view class="timer-container">

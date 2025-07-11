@@ -1,5 +1,4 @@
 const app = getApp();
-const shareHelper = require('../../utils/share-helper');
 
 // 辅助函数：将十六进制颜色转换为RGB
 function hexToRgb(hex) {
@@ -273,21 +272,5 @@ Page({
     });
   },
 
-  shareToFriend: function() {
-    // 使用分享工具模块
-    shareHelper.showShareMenu({
-      includeStats: true,
-      context: 'total',
-      path: '/pages/focus/focus'
-    });
-  },
 
-  // 页面分享配置
-  onShareAppMessage: function() {
-    return shareHelper.getShareAppMessageConfig('total', '/pages/focus/focus');
-  },
-
-  onShareTimeline: function() {
-    return shareHelper.getShareTimelineConfig('total');
-  }
 });
