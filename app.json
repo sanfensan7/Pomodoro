@@ -2,12 +2,18 @@
   "pages": [
     "pages/focus/focus",
     "pages/task/task",
+    "pages/mistakes/mistakes",
     "pages/stats/stats",
     "pages/settings/settings",
     "pages/complete/complete",
     "pages/sounds/sounds",
     "pages/achievements/achievements",
-    "pages/puzzle/puzzle"
+    "pages/puzzle/puzzle",
+    "pages/mistakes/edit",
+    "pages/mistakes/detail",
+    "pages/mistakes/subjects",
+    "pages/mistakes/review",
+    "pages/mistakes/stats"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -28,6 +34,10 @@
       {
         "pagePath": "pages/task/task",
         "text": "任务"
+      },
+      {
+        "pagePath": "pages/mistakes/mistakes",
+        "text": "错题本"
       },
       {
         "pagePath": "pages/stats/stats",

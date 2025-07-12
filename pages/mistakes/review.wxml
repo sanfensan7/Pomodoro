@@ -1,0 +1,135 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">正在加载复习内容...</view>
+  </view>
+
+  <!-- 复习内容 -->
+  <view class="review-content" wx:if="{{!loading && !isCompleted}}">
+    <!-- 头部进度 -->
+    <view class="review-header">
+      <view class="progress-info">
+        <view class="progress-text">{{reviewProgress.current}} / {{reviewProgress.total}}</view>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{(reviewProgress.current / reviewProgress.total) * 100}}%"></view>
+        </view>
+      </view>
+      <view class="exit-btn" bindtap="exitReview">
+        <text class="exit-icon">✕</text>
+      </view>
+    </view>
+
+    <!-- 题目内容 -->
+    <view class="question-container" wx:if="{{currentMistake}}">
+      <!-- 题目信息 -->
+      <view class="question-info">
+        <view class="question-meta">
+          <text class="subject-tag" style="background-color: {{currentMistake.subjectColor}}">{{currentMistake.subject}}</text>
+          <text class="chapter-tag" wx:if="{{currentMistake.chapter}}">{{currentMistake.chapter}}</text>
+          <text class="difficulty-tag difficulty-{{currentMistake.difficulty}}">{{currentMistake.difficultyText}}</text>
+        </view>
+      </view>
+
+      <!-- 题目内容 -->
+      <view class="question-content">
+        <view class="question-title">题目</view>
+        <view class="question-text">{{currentMistake.question}}</view>
+
+        <!-- 题目图片 -->
+        <view class="question-image" wx:if="{{currentMistake.questionImage && currentMistake.questionImage !== ''}}" bindtap="previewImage">
+          <image src="{{currentMistake.questionImage}}" mode="widthFix" />
+        </view>
+      </view>
+
+      <!-- 用户答案输入 -->
+      <view class="answer-input-section" wx:if="{{!showAnswer}}">
+        <view class="section-title">你的答案</view>
+        <textarea
+          class="answer-input"
+          placeholder="请输入你的答案..."
+          value="{{userAnswer}}"
+          bindinput="onAnswerInput"
+          maxlength="500"
+        ></textarea>
+      </view>
+
+      <!-- 标准答案 -->
+      <view class="answer-section" wx:if="{{showAnswer}}">
+        <view class="section-title">标准答案</view>
+
+        <!-- 答案图片 -->
+        <view class="answer-image" wx:if="{{currentMistake.answerImage && currentMistake.answerImage !== ''}}" bindtap="previewAnswerImage">
+          <image src="{{currentMistake.answerImage}}" mode="widthFix" />
+        </view>
+
+        <!-- 文字答案 -->
+        <view class="answer-content" wx:if="{{currentMistake.correctAnswer || currentMistake.answer}}">
+          {{currentMistake.correctAnswer || currentMistake.answer}}
+        </view>
+      </view>
+
+      <!-- 解析 -->
+      <view class="explanation-section" wx:if="{{showExplanation && currentMistake.explanation}}">
+        <view class="section-title">解析</view>
+        <view class="explanation-content">{{currentMistake.explanation}}</view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <!-- 未显示答案时的按钮 -->
+        <view class="button-group" wx:if="{{!showAnswer}}">
+          <button class="action-btn secondary" bindtap="showAnswer">查看答案</button>
+          <button class="action-btn secondary" bindtap="skipQuestion">跳过</button>
+        </view>
+
+        <!-- 显示答案后的按钮 -->
+        <view class="button-group" wx:if="{{showAnswer}}">
+          <button class="action-btn wrong" bindtap="submitAnswer" data-correct="false">答错了</button>
+          <button class="action-btn correct" bindtap="submitAnswer" data-correct="true">答对了</button>
+        </view>
+      </view>
+
+      <!-- 导航按钮 -->
+      <view class="navigation-buttons">
+        <button class="nav-btn" bindtap="prevQuestion" disabled="{{currentIndex === 0}}">
+          <text class="nav-icon">‹</text>
+          <text class="nav-text">上一题</text>
+        </button>
+        <button class="nav-btn" bindtap="nextQuestion" disabled="{{currentIndex === reviewMistakes.length - 1}}">
+          <text class="nav-text">下一题</text>
+          <text class="nav-icon">›</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 完成状态 -->
+  <view class="completion-container" wx:if="{{isCompleted}}">
+    <view class="completion-icon">🎉</view>
+    <view class="completion-title">复习完成！</view>
+    <view class="completion-stats">
+      <view class="stat-item">
+        <view class="stat-number">{{reviewProgress.total}}</view>
+        <view class="stat-label">总题数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{reviewProgress.correct}}</view>
+        <view class="stat-label">答对</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{reviewProgress.wrong}}</view>
+        <view class="stat-label">答错</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{Math.round((reviewProgress.correct / reviewProgress.total) * 100)}}%</view>
+        <view class="stat-label">正确率</view>
+      </view>
+    </view>
+
+    <view class="completion-actions">
+      <button class="action-btn secondary" bindtap="restartReview">再次复习</button>
+      <button class="action-btn primary" bindtap="exitReview">返回</button>
+    </view>
+  </view>
+</view>

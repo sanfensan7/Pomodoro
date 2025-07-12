@@ -1,59 +1,100 @@
-<view class="container" style="--theme-color: {{themeColor}}">
-  <view class="header">
+<view class="container fade-in" style="--theme-color: {{themeColor}}">
+  <!-- 状态指示器 -->
+  <view class="status-indicator">
+    <view class="status-dot {{isRunning ? 'active' : 'paused'}}" style="background-color: {{themeColor}}"></view>
+    <text class="status-text">{{isRunning ? '专注中' : (isPaused ? '已暂停' : '准备开始')}}</text>
   </view>
-  
-  <view class="timer-container">
+
+  <!-- 计时器主体 -->
+  <view class="timer-container scale-in">
     <!-- 环形计时器 -->
     <view class="timer-circle" wx:if="{{timerStyle === 'circle'}}">
-      <canvas type="2d" id="progressRing" class="progress-ring"></canvas>
-      <view class="timer-background"></view>
-      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+      <view class="timer-ring">
+        <canvas type="2d" id="progressRing" class="progress-ring"></canvas>
+        <view class="timer-background"></view>
+        <view class="timer-content">
+          <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+          <view class="timer-label">{{timerLabel}}</view>
+        </view>
+      </view>
     </view>
-    
+
     <!-- 直线计时器 -->
     <view class="timer-line" wx:elif="{{timerStyle === 'line'}}">
-      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
-      <canvas type="2d" id="progressLine" class="progress-line"></canvas>
+      <view class="timer-content">
+        <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+        <view class="timer-label">{{timerLabel}}</view>
+      </view>
+      <view class="progress-container">
+        <canvas type="2d" id="progressLine" class="progress-line"></canvas>
+      </view>
     </view>
-    
+
     <!-- 极简计时器 -->
     <view class="timer-minimal" wx:elif="{{timerStyle === 'minimal'}}">
-      <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
-    </view>
-    
-    <view class="timer-label">{{timerLabel}}</view>
-  </view>
-  
-  <view class="controls">
-    <view class="btn-reset" bindtap="resetTimer">
-      <image src="/images/reset.png" mode="aspectFit"></image>
-    </view>
-    <view class="{{isRunning ? 'btn-pause' : 'btn-start'}}" bindtap="toggleTimer">
-      <image src="{{isRunning ? '/images/pause.png' : '/images/play.png'}}" mode="aspectFit"></image>
+      <view class="timer-content">
+        <view class="timer-display" style="color: {{themeColor}}">{{timerText}}</view>
+        <view class="timer-label">{{timerLabel}}</view>
+      </view>
     </view>
   </view>
-  
-  <view class="mode-tabs">
-    <view class="tab {{currentMode === 'focus' ? 'active' : ''}}" 
-          data-mode="focus" bindtap="switchMode">专注</view>
-    <view class="tab {{currentMode === 'shortBreak' ? 'active' : ''}}" 
-          data-mode="shortBreak" bindtap="switchMode">短休息</view>
-    <view class="tab {{currentMode === 'longBreak' ? 'active' : ''}}" 
-          data-mode="longBreak" bindtap="switchMode">长休息</view>
+
+  <!-- 控制按钮 -->
+  <view class="controls slide-up">
+    <button class="control-btn reset-btn" bindtap="resetTimer">
+      <view class="btn-icon">
+        <image src="/images/reset.png" mode="aspectFit"></image>
+      </view>
+      <text class="btn-text">重置</text>
+    </button>
+
+    <button class="control-btn main-btn {{isRunning ? 'pause' : 'start'}}" bindtap="toggleTimer">
+      <view class="btn-icon main">
+        <image src="{{isRunning ? '/images/pause.png' : '/images/play.png'}}" mode="aspectFit"></image>
+      </view>
+    </button>
   </view>
-  
-  <view class="stats-summary">
-    <view class="stat-item">
-      <text class="stat-value" style="color: {{themeColor}}">{{todayCompleted}}</text>
-      <text class="stat-label">今日完成</text>
+
+  <!-- 模式切换 -->
+  <view class="mode-tabs card">
+    <view class="tab {{currentMode === 'focus' ? 'active' : ''}}"
+          data-mode="focus" bindtap="switchMode"
+          style="{{currentMode === 'focus' ? 'background-color:' + themeColor : ''}}">
+      <text class="tab-icon">🎯</text>
+      <text class="tab-text">专注</text>
     </view>
-    <view class="stat-item">
-      <text class="stat-value" style="color: {{themeColor}}">{{todayFocusTime}}</text>
-      <text class="stat-label">专注时长</text>
+    <view class="tab {{currentMode === 'shortBreak' ? 'active' : ''}}"
+          data-mode="shortBreak" bindtap="switchMode"
+          style="{{currentMode === 'shortBreak' ? 'background-color:' + themeColor : ''}}">
+      <text class="tab-icon">☕</text>
+      <text class="tab-text">短休息</text>
     </view>
-    <view class="stat-item">
-      <text class="stat-value" style="color: {{themeColor}}">{{weekCompleted}}</text>
-      <text class="stat-label">本周完成</text>
+    <view class="tab {{currentMode === 'longBreak' ? 'active' : ''}}"
+          data-mode="longBreak" bindtap="switchMode"
+          style="{{currentMode === 'longBreak' ? 'background-color:' + themeColor : ''}}">
+      <text class="tab-icon">🛋️</text>
+      <text class="tab-text">长休息</text>
     </view>
   </view>
-</view> 
+
+  <!-- 统计摘要 -->
+  <view class="stats-summary card">
+    <view class="stats-header">
+      <text class="stats-title">今日统计</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <view class="stat-value" style="color: {{themeColor}}">{{todayCompleted}}</view>
+        <view class="stat-label">完成次数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value" style="color: {{themeColor}}">{{todayFocusTime}}</view>
+        <view class="stat-label">专注时长</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value" style="color: {{themeColor}}">{{weekCompleted}}</view>
+        <view class="stat-label">本周完成</view>
+      </view>
+    </view>
+  </view>
+</view>

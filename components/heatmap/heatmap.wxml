@@ -1,0 +1,71 @@
+<view class="heatmap-container">
+  <view class="heatmap-header">
+    <view class="heatmap-title">{{title}}</view>
+    <view class="heatmap-subtitle">{{subtitle}}</view>
+  </view>
+  
+  <!-- 月份标签 -->
+  <view class="month-labels">
+    <view class="month-label" wx:for="{{monthLabels}}" wx:key="*this">{{item}}</view>
+  </view>
+  
+  <!-- 热力图网格 -->
+  <view class="heatmap-grid">
+    <!-- 星期标签 -->
+    <view class="weekday-labels">
+      <view class="weekday-label" wx:for="{{weekLabels}}" wx:key="*this">{{item}}</view>
+    </view>
+    
+    <!-- 热力图方块 -->
+    <view class="heatmap-weeks">
+      <view class="heatmap-week" wx:for="{{weeks}}" wx:key="index" wx:for-index="weekIndex">
+        <view 
+          class="heatmap-day {{day.isToday ? 'today' : ''}}" 
+          wx:for="{{item}}" 
+          wx:key="date"
+          wx:for-item="day"
+          style="background-color: {{day.color}}; border-color: {{day.borderColor}}"
+          bindtap="onDayTap"
+          data-date="{{day.date}}"
+          data-count="{{day.count}}"
+          data-details="{{day.details}}"
+        >
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 图例 -->
+  <view class="heatmap-legend">
+    <view class="legend-text">少</view>
+    <view class="legend-colors">
+      <view 
+        class="legend-color" 
+        wx:for="{{legendColors}}" 
+        wx:key="*this"
+        style="background-color: {{item}}"
+      ></view>
+    </view>
+    <view class="legend-text">多</view>
+  </view>
+  
+  <!-- 统计信息 -->
+  <view class="heatmap-stats" wx:if="{{showStats}}">
+    <view class="stat-item">
+      <view class="stat-number">{{stats.totalDays}}</view>
+      <view class="stat-label">总天数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.activeDays}}</view>
+      <view class="stat-label">活跃天数</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.totalCount}}</view>
+      <view class="stat-label">总{{unit}}</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-number">{{stats.maxStreak}}</view>
+      <view class="stat-label">最长连续</view>
+    </view>
+  </view>
+</view>

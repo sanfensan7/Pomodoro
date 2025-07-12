@@ -304,6 +304,176 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
+/* 提示按钮样式 */
+.control-btn.hint {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  border: 2rpx solid #ffc107;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn.hint:active {
+  background: linear-gradient(135deg, #ffed4e, #ffd700);
+}
+
+.control-btn.hint.used {
+  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+  color: #666;
+  border-color: #ccc;
+}
+
+.control-btn.hint[disabled] {
+  opacity: 0.6;
+  transform: none !important;
+}
+
+.hint-icon {
+  font-size: 28rpx;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.hint-text {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.hint-count {
+  font-size: 20rpx;
+  opacity: 0.8;
+}
+
+/* 提示显示区域 */
+.hint-display {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.hint-display.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hint-content {
+  background: white;
+  border-radius: 20rpx;
+  margin: 40rpx;
+  max-width: 600rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+
+.hint-display.show .hint-content {
+  transform: scale(1);
+}
+
+.hint-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx 30rpx 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.hint-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.hint-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 50%;
+  font-size: 24rpx;
+  color: #666;
+  cursor: pointer;
+}
+
+.hint-close:active {
+  background: #e9ecef;
+}
+
+.hint-message {
+  padding: 30rpx;
+}
+
+.hint-step {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.hint-detail {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+.hint-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 20rpx 30rpx 30rpx;
+}
+
+.hint-btn {
+  flex: 1;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.hint-btn.apply {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(76, 175, 80, 0.3);
+}
+
+.hint-btn.apply:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(76, 175, 80, 0.4);
+}
+
+.hint-btn.close {
+  background: #f8f9fa;
+  color: #666;
+  border: 2rpx solid #e9ecef;
+}
+
+.hint-btn.close:active {
+  background: #e9ecef;
+}
+
 /* 完成界面 */
 .game-completed {
   padding: 30rpx 30rpx 40rpx 30rpx;

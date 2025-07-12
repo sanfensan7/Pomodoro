@@ -1,0 +1,400 @@
+.container {
+  padding: 20rpx;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  --theme-color: #ff6b6b;
+}
+
+/* 头部信息 */
+.header {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.subject-info {
+  flex: 1;
+}
+
+.subject-tag {
+  background: var(--theme-color);
+  color: white;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 10rpx;
+}
+
+.chapter-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 28rpx;
+  transition: all 0.3s;
+}
+
+.star-btn {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.star-btn.starred {
+  background: #fff3cd;
+  color: #ffc107;
+}
+
+.edit-btn {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.delete-btn {
+  background: #ffebee;
+  color: #f44336;
+}
+
+.share-btn {
+  background: #e8f5e8;
+  color: #4caf50;
+}
+
+/* 通用区块样式 */
+.question-section,
+.answer-section,
+.explanation-section,
+.status-section,
+.history-section,
+.review-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-icon {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 题目内容 */
+.question-content {
+  margin-bottom: 20rpx;
+}
+
+.question-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 15rpx;
+}
+
+.question-image {
+  margin: 15rpx 0;
+}
+
+.question-image image {
+  width: 100%;
+  border-radius: 8rpx;
+}
+
+.knowledge-point {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+}
+
+.knowledge-point .label {
+  color: #999;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.tag {
+  background: #f0f0f0;
+  color: #666;
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+  font-size: 20rpx;
+}
+
+/* 复习模式 */
+.answer-input {
+  width: 100%;
+  min-height: 120rpx;
+  padding: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  background: #fafafa;
+  line-height: 1.6;
+  margin-bottom: 20rpx;
+}
+
+.review-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.review-btn {
+  flex: 1;
+  height: 80rpx;
+  border: none;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.review-btn.correct {
+  background: #4caf50;
+  color: white;
+}
+
+.review-btn.wrong {
+  background: #f44336;
+  color: white;
+}
+
+/* 答案内容 */
+.answer-content {
+  font-size: 28rpx;
+  line-height: 1.6;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  border-left: 4rpx solid;
+}
+
+.wrong-answer {
+  background: #ffebee;
+  border-left-color: #f44336;
+  color: #d32f2f;
+}
+
+.correct-answer {
+  background: #e8f5e8;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.answer-placeholder,
+.explanation-placeholder {
+  text-align: center;
+  padding: 40rpx 20rpx;
+  color: #999;
+  font-size: 26rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  border: 2rpx dashed #ddd;
+}
+
+.explanation-content {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #333;
+  padding: 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+/* 状态网格 */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20rpx;
+}
+
+.status-item {
+  text-align: center;
+}
+
+.status-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 10rpx;
+}
+
+.status-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.difficulty-display,
+.mastery-stars {
+  display: flex;
+  justify-content: center;
+  gap: 4rpx;
+}
+
+.star {
+  font-size: 24rpx;
+  color: #ddd;
+}
+
+.star.filled {
+  color: #ffc107;
+}
+
+.mastery-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.mastery-level {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+/* 复习历史 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15rpx;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 20rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+.history-date {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.history-result {
+  font-size: 24rpx;
+  font-weight: 500;
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.history-result.correct {
+  background: #e8f5e8;
+  color: #4caf50;
+}
+
+.history-result.wrong {
+  background: #ffebee;
+  color: #f44336;
+}
+
+/* 底部操作 */
+.bottom-actions {
+  background: white;
+  padding: 30rpx;
+  margin: 20rpx -20rpx -20rpx -20rpx;
+  display: flex;
+  gap: 20rpx;
+  box-shadow: 0 -2rpx 8rpx rgba(0,0,0,0.05);
+}
+
+.action-button {
+  flex: 1;
+  height: 88rpx;
+  border: none;
+  border-radius: 44rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.action-button.primary {
+  background: var(--theme-color);
+  color: white;
+}
+
+.action-button.secondary {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 加载和错误状态 */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40rpx;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #f0f0f0;
+  border-top: 4rpx solid var(--theme-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+.loading-text,
+.error-text {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.3;
+}
+
+.back-btn {
+  margin-top: 30rpx;
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 40rpx;
+  padding: 20rpx 40rpx;
+  font-size: 28rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

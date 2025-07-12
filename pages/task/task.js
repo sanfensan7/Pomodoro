@@ -7,6 +7,9 @@ Page({
     tasks: [],
     showTaskForm: false,
     showSortMenu: false,
+    sortType: 'createTime',
+    completedCount: 0,
+    completionRate: 0,
     editingTask: null,
     newTask: {
       title: '',
@@ -19,21 +22,28 @@ Page({
   },
 
   onLoad: function() {
-    // 启用分享功能
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline']
-    });
+    console.log('任务页面加载中...');
 
-    // 获取全局主题色
-    if (app.globalData.themeColor) {
-      this.setData({
-        themeColor: app.globalData.themeColor
+    try {
+      // 启用分享功能
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
       });
-    }
 
-    // 加载任务列表
-    this.loadTasks();
+      // 获取全局主题色
+      if (app.globalData.themeColor) {
+        this.setData({
+          themeColor: app.globalData.themeColor
+        });
+      }
+
+      // 加载任务列表
+      this.loadTasks();
+      console.log('任务页面加载完成');
+    } catch (error) {
+      console.error('任务页面加载失败:', error);
+    }
   },
   
   onShow: function() {
@@ -49,8 +59,34 @@ Page({
   },
   
   loadTasks: function() {
-    var tasks = wx.getStorageSync('tasks') || [];
-    this.setData({ tasks });
+    try {
+      var tasks = wx.getStorageSync('tasks') || [];
+
+      // 确保任务数据格式正确
+      if (!Array.isArray(tasks)) {
+        console.warn('任务数据格式错误，重置为空数组');
+        tasks = [];
+      }
+
+      // 验证每个任务的数据完整性
+      tasks = tasks.filter(task => {
+        return task && typeof task === 'object' && task.id && task.title;
+      });
+
+      // 计算统计数据
+      const completedCount = tasks.filter(task => task.completed).length;
+      const completionRate = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+
+      this.setData({
+        tasks,
+        completedCount,
+        completionRate
+      });
+      console.log('任务加载完成，共', tasks.length, '个任务');
+    } catch (error) {
+      console.error('加载任务失败:', error);
+      this.setData({ tasks: [] });
+    }
   },
   
   toggleTaskForm: function() {
@@ -281,6 +317,16 @@ Page({
     wx.switchTab({
       url: '/pages/focus/focus'
     });
+  },
+
+  // 关闭排序菜单
+  closeSortMenu: function() {
+    this.setData({ showSortMenu: false });
+  },
+
+  // 阻止事件冒泡
+  stopPropagation: function() {
+    // 阻止事件冒泡
   },
 
   // 分享给微信好友

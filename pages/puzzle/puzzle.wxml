@@ -97,9 +97,42 @@
           重新开始
         </button>
       </view>
+
+      <view class="control-row">
+        <button class="control-btn hint {{hintUsed ? 'used' : ''}}" bindtap="getHint" disabled="{{!isGameActive || isShowingHint}}">
+          <text class="hint-icon">💡</text>
+          <text class="hint-text">{{isShowingHint ? '提示中...' : '获取提示'}}</text>
+          <text class="hint-count" wx:if="{{hintsUsed > 0}}">({{hintsUsed}})</text>
+        </button>
+      </view>
+
       <button class="control-btn primary full-width" bindtap="backToMenu">
         返回菜单
       </button>
+    </view>
+
+    <!-- 提示显示区域 -->
+    <view class="hint-display {{showHint ? 'show' : ''}}" wx:if="{{currentHint}}">
+      <view class="hint-content">
+        <view class="hint-header">
+          <text class="hint-title">💡 智能提示</text>
+          <view class="hint-close" bindtap="closeHint">✕</view>
+        </view>
+        <view class="hint-message">
+          <text class="hint-step">{{currentHint.message}}</text>
+          <view class="hint-detail" wx:if="{{currentHint.detail}}">
+            <text>{{currentHint.detail}}</text>
+          </view>
+        </view>
+        <view class="hint-actions">
+          <button class="hint-btn apply" bindtap="applyHint" wx:if="{{currentHint.canApply}}">
+            自动执行
+          </button>
+          <button class="hint-btn close" bindtap="closeHint">
+            知道了
+          </button>
+        </view>
+      </view>
     </view>
   </view>
 
@@ -122,6 +155,10 @@
       <view class="stat-item">
         <view class="stat-label">难度等级</view>
         <view class="stat-value">{{puzzleSize}}×{{puzzleSize}}</view>
+      </view>
+      <view class="stat-item" wx:if="{{hintsUsed > 0}}">
+        <view class="stat-label">使用提示</view>
+        <view class="stat-value">{{hintsUsed}}次</view>
       </view>
     </view>
 

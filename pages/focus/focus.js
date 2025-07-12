@@ -1,6 +1,7 @@
 var app = getApp();
 var achievementTracker = require('../../utils/achievement-tracker');
 var shareHelper = require('../../utils/share-helper');
+var vibrate = require('../../utils/vibrate');
 
 Page({
   data: {
@@ -44,7 +45,10 @@ Page({
   onShow: function() {
     // 重新加载设置以确保最新设置得到应用
     this.loadSettings();
-    
+
+    // 更新震动设置
+    vibrate.updateSettings();
+
     // 如果从设置页返回，可能需要更新主题色
     if (app.globalData.themeColor !== this.data.themeColor) {
       this.setData({
@@ -52,7 +56,7 @@ Page({
       });
       this.drawProgressRing();
     }
-    
+
     // 如果有下一个模式设置，则切换
     if (app.globalData.nextMode) {
       this.switchMode({ currentTarget: { dataset: { mode: app.globalData.nextMode } } });
@@ -65,13 +69,38 @@ Page({
         currentTask: app.globalData.currentTask
       });
     }
-    
+
     // 更新统计数据
     this.updateStats();
-    
+
     // 如果当前不是计时中状态，重新初始化计时器以应用新设置
     if (!this.data.isRunning) {
       this.initTimer();
+    } else {
+      // 如果正在计时，也要更新进度显示以应用新样式
+      setTimeout(() => {
+        if (this.data.timerStyle === 'circle') {
+          this.drawProgressRing();
+        } else if (this.data.timerStyle === 'line') {
+          this.drawProgressLine();
+        }
+      }, 100);
+    }
+
+    // 页面显示时，如果正在计时且启用了屏幕常亮则重新设置
+    if (this.data.isRunning) {
+      var keepScreenOn = wx.getStorageSync('keepScreenOn');
+      if (keepScreenOn !== false) { // 默认启用
+        wx.setKeepScreenOn({
+          keepScreenOn: true,
+          success: function() {
+            console.log('页面显示，屏幕常亮已恢复');
+          },
+          fail: function(error) {
+            console.error('设置屏幕常亮失败:', error);
+          }
+        });
+      }
     }
   },
   
@@ -109,23 +138,7 @@ Page({
     });
   },
 
-  onShow: function() {
-    // 页面显示时，如果正在计时且启用了屏幕常亮则重新设置
-    if (this.data.isRunning) {
-      var keepScreenOn = wx.getStorageSync('keepScreenOn');
-      if (keepScreenOn !== false) { // 默认启用
-        wx.setKeepScreenOn({
-          keepScreenOn: true,
-          success: function() {
-            console.log('页面显示，屏幕常亮已恢复');
-          },
-          fail: function(error) {
-            console.error('设置屏幕常亮失败:', error);
-          }
-        });
-      }
-    }
-  },
+
 
   onReady: function() {
     // 绘制初始进度环
@@ -137,7 +150,10 @@ Page({
     const shortBreakDuration = wx.getStorageSync('shortBreakDuration') || 5;
     const longBreakDuration = wx.getStorageSync('longBreakDuration') || 15;
     const timerStyle = wx.getStorageSync('timerStyle') || 'circle';
-    
+
+    // 检查计时器样式是否发生变化
+    const oldTimerStyle = this.data.timerStyle;
+
     this.setData({
       focusDuration: focusDuration,
       shortBreakDuration: shortBreakDuration,
@@ -145,8 +161,19 @@ Page({
       timerStyle: timerStyle,
       timeLeft: focusDuration * 60
     });
-    
+
     this.updateTimerDisplay();
+
+    // 如果计时器样式发生变化，重新绘制进度显示
+    if (oldTimerStyle !== timerStyle) {
+      setTimeout(() => {
+        if (timerStyle === 'circle') {
+          this.drawProgressRing();
+        } else if (timerStyle === 'line') {
+          this.drawProgressLine();
+        }
+      }, 100); // 延迟一点时间确保DOM更新完成
+    }
   },
   
   initTimer: function() {
@@ -187,6 +214,9 @@ Page({
   toggleTimer: function() {
     // 播放按钮点击音效
     this.playButtonSound();
+
+    // 震动反馈
+    vibrate.buttonTap();
 
     if (this.data.isRunning) {
       this.pauseTimer();
@@ -459,7 +489,10 @@ Page({
   
   switchMode: function(e) {
     const mode = e.currentTarget.dataset.mode;
-    
+
+    // 震动反馈
+    vibrate.buttonTap();
+
     this.setData({
       currentMode: mode
     });

@@ -19,21 +19,28 @@ Page({
   },
 
   onLoad: function() {
-    // 启用分享功能
-    wx.showShareMenu({
-      withShareTicket: true,
-      menus: ['shareAppMessage', 'shareTimeline']
-    });
+    console.log('统计页面加载中...');
 
-    // 获取全局主题色
-    if (app.globalData.themeColor) {
-      this.setData({
-        themeColor: app.globalData.themeColor
+    try {
+      // 启用分享功能
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
       });
-    }
 
-    // 加载统计数据
-    this.fetchStatsData();
+      // 获取全局主题色
+      if (app.globalData.themeColor) {
+        this.setData({
+          themeColor: app.globalData.themeColor
+        });
+      }
+
+      // 加载统计数据
+      this.fetchStatsData();
+      console.log('统计页面加载完成');
+    } catch (error) {
+      console.error('统计页面加载失败:', error);
+    }
   },
   
   onShow: function() {
@@ -207,30 +214,65 @@ Page({
   },
   
   fetchStatsData: function() {
-    let statsData;
-    
-    // 根据当前周期获取对应的统计数据
-    switch (this.data.period) {
-      case 'day':
-        statsData = this.getDayStats();
-        break;
-      case 'week':
-        statsData = this.getWeekStats();
-        break;
-      case 'month':
-        statsData = this.getMonthStats();
-        break;
+    try {
+      let statsData;
+
+      // 根据当前周期获取对应的统计数据
+      switch (this.data.period) {
+        case 'day':
+          statsData = this.getDayStats();
+          break;
+        case 'week':
+          statsData = this.getWeekStats();
+          break;
+        case 'month':
+          statsData = this.getMonthStats();
+          break;
+        default:
+          statsData = this.getDayStats();
+      }
+
+      // 确保数据完整性
+      if (!statsData || !statsData.labels || !statsData.values || !statsData.summary) {
+        console.error('统计数据不完整:', statsData);
+        statsData = {
+          labels: ['暂无数据'],
+          values: [0],
+          summary: {
+            count: '0 次',
+            duration: '0 小时 0 分钟',
+            average: '0 次',
+            longest: '0 次'
+          }
+        };
+      }
+
+      // 更新图表和统计摘要
+      this.setData({
+        chartData: {
+          labels: statsData.labels,
+          values: statsData.values,
+          heights: this.calculateHeights(statsData.values)
+        },
+        currentStats: statsData.summary
+      });
+    } catch (error) {
+      console.error('获取统计数据失败:', error);
+      // 设置默认数据
+      this.setData({
+        chartData: {
+          labels: ['暂无数据'],
+          values: [0],
+          heights: [0]
+        },
+        currentStats: {
+          count: '0 次',
+          duration: '0 小时 0 分钟',
+          average: '0 次',
+          longest: '0 次'
+        }
+      });
     }
-    
-    // 更新图表和统计摘要
-    this.setData({
-      chartData: {
-        labels: statsData.labels,
-        values: statsData.values,
-        heights: this.calculateHeights(statsData.values)
-      },
-      currentStats: statsData.summary
-    });
   },
   
   calculateHeights: function(values) {

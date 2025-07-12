@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "考研错题本",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "heatmap": "../../components/heatmap/heatmap"
+  }
+}

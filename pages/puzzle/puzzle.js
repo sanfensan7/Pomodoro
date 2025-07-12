@@ -1,5 +1,6 @@
 var app = getApp();
 var shareHelper = require('../../utils/share-helper');
+var vibrate = require('../../utils/vibrate');
 
 Page({
   data: {
@@ -23,7 +24,14 @@ Page({
       { value: 3, label: '简单 (3×3)' },
       { value: 4, label: '中等 (4×4)' },
       { value: 5, label: '困难 (5×5)' }
-    ]
+    ],
+
+    // 提示系统相关
+    hintsUsed: 0,
+    showHint: false,
+    isShowingHint: false,
+    currentHint: null,
+    hintUsed: false
   },
 
   onLoad: function() {
@@ -103,7 +111,13 @@ Page({
       moves: 0,
       gameTime: 0,
       startTime: Date.now(),
-      isGameActive: true
+      isGameActive: true,
+      // 重置提示相关数据
+      hintsUsed: 0,
+      showHint: false,
+      isShowingHint: false,
+      currentHint: null,
+      hintUsed: false
     });
 
     this.initPuzzle();
@@ -348,11 +362,349 @@ Page({
     }
   },
 
+  // 获取提示
+  getHint: function() {
+    if (!this.data.isGameActive || this.data.isShowingHint) {
+      return;
+    }
+
+    vibrate.buttonTap();
+
+    this.setData({ isShowingHint: true });
+
+    // 使用setTimeout避免阻塞UI
+    setTimeout(() => {
+      try {
+        // 计算最优下一步
+        const hint = this.calculateBestMove();
+
+        if (hint) {
+          this.setData({
+            currentHint: hint,
+            showHint: true,
+            isShowingHint: false,
+            hintsUsed: this.data.hintsUsed + 1,
+            hintUsed: true
+          });
+        } else {
+          this.setData({ isShowingHint: false });
+          wx.showToast({
+            title: '当前状态已是最优',
+            icon: 'none'
+          });
+        }
+      } catch (error) {
+        console.error('计算提示失败:', error);
+        this.setData({ isShowingHint: false });
+        wx.showToast({
+          title: '提示计算失败',
+          icon: 'none'
+        });
+      }
+    }, 100);
+  },
+
+  // 计算最优移动
+  calculateBestMove: function() {
+    const currentGrid = this.data.puzzleGrid;
+    const size = this.data.puzzleSize;
+    const emptyPos = this.data.emptyPosition;
+
+    // 获取目标状态
+    const targetGrid = this.generateTargetGrid(size);
+
+    // 计算当前状态的曼哈顿距离
+    const currentDistance = this.calculateManhattanDistance(currentGrid, targetGrid, size);
+
+    // 获取所有可能的移动
+    const possibleMoves = this.getPossibleMoves(emptyPos, size);
+
+    let bestMove = null;
+    let bestDistance = currentDistance;
+    let bestScore = -1;
+    let bestReason = '';
+
+    for (let move of possibleMoves) {
+      // 模拟移动
+      const newGrid = this.simulateMove(currentGrid, emptyPos, move, size);
+      const newDistance = this.calculateManhattanDistance(newGrid, targetGrid, size);
+
+      // 计算移动的价值分数
+      const moveScore = this.calculateMoveScore(currentGrid, move, size);
+
+      // 进行深度为2的搜索，预测下一步的最优性
+      const futureScore = this.calculateFutureScore(newGrid, { row: move.row, col: move.col }, size, targetGrid);
+      const totalScore = moveScore + futureScore * 0.5; // 给未来分数较小权重
+
+      // 选择距离更近或分数更高的移动
+      if (newDistance < bestDistance || (newDistance === bestDistance && totalScore > bestScore)) {
+        bestDistance = newDistance;
+        bestScore = totalScore;
+        bestMove = move;
+        bestReason = this.getMovementReason(currentGrid, move, size, targetGrid);
+      }
+    }
+
+    if (bestMove) {
+      const tileValue = currentGrid[bestMove.row][bestMove.col];
+      const direction = this.getMoveDirection(emptyPos, bestMove);
+
+      return {
+        message: `建议移动数字 ${tileValue} ${direction}`,
+        detail: bestReason,
+        move: bestMove,
+        canApply: true
+      };
+    }
+
+    return null;
+  },
+
+  // 计算未来分数（预测下一步的最优性）- 简化版本避免死循环
+  calculateFutureScore: function(grid, newEmptyPos, size, targetGrid) {
+    // 简化算法，只检查直接相邻的移动，避免复杂递归
+    const possibleMoves = this.getPossibleMoves(newEmptyPos, size);
+    let maxFutureScore = 0;
+
+    // 限制检查数量，避免性能问题
+    const maxChecks = Math.min(possibleMoves.length, 4);
+
+    for (let i = 0; i < maxChecks; i++) {
+      const move = possibleMoves[i];
+      const value = grid[move.row][move.col];
+
+      // 简单检查：如果移动后数字更接近目标位置，给予奖励
+      const targetRow = Math.floor((value - 1) / size);
+      const targetCol = (value - 1) % size;
+
+      const currentDist = Math.abs(move.row - targetRow) + Math.abs(move.col - targetCol);
+      const newDist = Math.abs(newEmptyPos.row - targetRow) + Math.abs(newEmptyPos.col - targetCol);
+
+      if (newDist < currentDist) {
+        maxFutureScore = Math.max(maxFutureScore, currentDist - newDist);
+      }
+    }
+
+    return maxFutureScore;
+  },
+
+  // 获取移动原因说明
+  getMovementReason: function(grid, move, size, targetGrid) {
+    const value = grid[move.row][move.col];
+    const targetRow = Math.floor((value - 1) / size);
+    const targetCol = (value - 1) % size;
+
+    // 检查是否移动到正确位置
+    if (move.row === targetRow && move.col === targetCol) {
+      return `将数字 ${value} 放到正确位置`;
+    }
+
+    // 检查是否移动到正确行或列
+    if (move.row === targetRow) {
+      return `将数字 ${value} 移动到正确的行`;
+    }
+
+    if (move.col === targetCol) {
+      return `将数字 ${value} 移动到正确的列`;
+    }
+
+    // 检查是否会形成连续序列
+    if (this.wouldCreateSequence(grid, move, value, size)) {
+      return `形成连续数字序列，便于后续整理`;
+    }
+
+    // 检查是否减少曼哈顿距离
+    const currentDistance = Math.abs(move.row - targetRow) + Math.abs(move.col - targetCol);
+    const emptyDistance = Math.abs(this.data.emptyPosition.row - targetRow) + Math.abs(this.data.emptyPosition.col - targetCol);
+
+    if (currentDistance < emptyDistance) {
+      return `减少数字到目标位置的距离`;
+    }
+
+    return `这是当前最优的移动选择`;
+  },
+
+  // 生成目标网格
+  generateTargetGrid: function(size) {
+    const grid = [];
+    let num = 1;
+
+    for (let i = 0; i < size; i++) {
+      grid[i] = [];
+      for (let j = 0; j < size; j++) {
+        if (i === size - 1 && j === size - 1) {
+          grid[i][j] = 0; // 空格在右下角
+        } else {
+          grid[i][j] = num++;
+        }
+      }
+    }
+
+    return grid;
+  },
+
+  // 计算曼哈顿距离
+  calculateManhattanDistance: function(currentGrid, targetGrid, size) {
+    let distance = 0;
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        const value = currentGrid[i][j];
+        if (value !== 0) {
+          // 直接计算目标位置，避免嵌套循环
+          const targetRow = Math.floor((value - 1) / size);
+          const targetCol = (value - 1) % size;
+
+          // 计算曼哈顿距离
+          distance += Math.abs(i - targetRow) + Math.abs(j - targetCol);
+        }
+      }
+    }
+
+    return distance;
+  },
+
+  // 获取可能的移动
+  getPossibleMoves: function(emptyPos, size) {
+    const moves = [];
+    const directions = [
+      { row: -1, col: 0 }, // 上
+      { row: 1, col: 0 },  // 下
+      { row: 0, col: -1 }, // 左
+      { row: 0, col: 1 }   // 右
+    ];
+
+    for (let dir of directions) {
+      const newRow = emptyPos.row + dir.row;
+      const newCol = emptyPos.col + dir.col;
+
+      if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
+        moves.push({ row: newRow, col: newCol });
+      }
+    }
+
+    return moves;
+  },
+
+  // 模拟移动
+  simulateMove: function(grid, emptyPos, move, size) {
+    const newGrid = grid.map(row => [...row]);
+
+    // 交换空格和目标位置
+    newGrid[emptyPos.row][emptyPos.col] = newGrid[move.row][move.col];
+    newGrid[move.row][move.col] = 0;
+
+    return newGrid;
+  },
+
+  // 计算移动分数
+  calculateMoveScore: function(grid, move, size) {
+    const value = grid[move.row][move.col];
+
+    // 计算该数字到目标位置的距离
+    const targetRow = Math.floor((value - 1) / size);
+    const targetCol = (value - 1) % size;
+
+    const currentDistance = Math.abs(move.row - targetRow) + Math.abs(move.col - targetCol);
+
+    let score = size * 2 - currentDistance;
+
+    // 额外策略：优先移动已经在正确行或列的数字
+    if (move.row === targetRow || move.col === targetCol) {
+      score += 5;
+    }
+
+    // 优先移动小数字（通常更容易放到正确位置）
+    if (value <= size) {
+      score += 3;
+    }
+
+    // 检查是否会形成连续序列
+    if (this.wouldCreateSequence(grid, move, value, size)) {
+      score += 10;
+    }
+
+    return score;
+  },
+
+  // 检查移动是否会创建连续序列
+  wouldCreateSequence: function(grid, move, value, size) {
+    // 检查水平和垂直方向是否会形成连续的数字序列
+    const directions = [
+      { row: 0, col: 1 },  // 右
+      { row: 0, col: -1 }, // 左
+      { row: 1, col: 0 },  // 下
+      { row: -1, col: 0 }  // 上
+    ];
+
+    for (let dir of directions) {
+      const nextRow = move.row + dir.row;
+      const nextCol = move.col + dir.col;
+
+      if (nextRow >= 0 && nextRow < size && nextCol >= 0 && nextCol < size) {
+        const nextValue = grid[nextRow][nextCol];
+        if (nextValue === value + 1 || nextValue === value - 1) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  },
+
+  // 获取移动方向描述
+  getMoveDirection: function(emptyPos, move) {
+    if (move.row < emptyPos.row) return '向上';
+    if (move.row > emptyPos.row) return '向下';
+    if (move.col < emptyPos.col) return '向左';
+    if (move.col > emptyPos.col) return '向右';
+    return '';
+  },
+
+  // 关闭提示
+  closeHint: function() {
+    vibrate.buttonTap();
+
+    this.setData({
+      showHint: false,
+      currentHint: null
+    });
+  },
+
+  // 应用提示（自动执行移动）
+  applyHint: function() {
+    if (!this.data.currentHint || !this.data.currentHint.canApply) {
+      return;
+    }
+
+    vibrate.buttonTap();
+
+    const move = this.data.currentHint.move;
+
+    // 执行移动
+    this.moveTile({
+      currentTarget: {
+        dataset: {
+          row: move.row,
+          col: move.col
+        }
+      }
+    });
+
+    // 关闭提示
+    this.closeHint();
+
+    wx.showToast({
+      title: '已自动执行提示',
+      icon: 'success'
+    });
+  },
+
   // 分享功能
   onShareAppMessage: function() {
     var difficulty = this.data.difficulty;
     var difficultyText = difficulty === 3 ? '简单' : difficulty === 4 ? '中等' : '困难';
-    
+
     return {
       title: '我在玩拼图游戏(' + difficultyText + ')，快来挑战吧！',
       path: '/pages/puzzle/puzzle',

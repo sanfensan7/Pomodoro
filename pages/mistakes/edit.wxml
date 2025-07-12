@@ -1,0 +1,264 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="header-title">{{isEdit ? '编辑错题' : '添加错题'}}</view>
+    <view class="header-actions">
+      <button class="mode-switch-btn {{inputMode === 'image' ? 'active' : ''}}" bindtap="switchInputMode">
+        {{inputMode === 'image' ? '📷 图片模式' : '📝 文字模式'}}
+      </button>
+      <button class="reset-btn" bindtap="resetForm">重置</button>
+    </view>
+  </view>
+
+  <!-- 表单内容 -->
+  <scroll-view class="form-container" scroll-y>
+    <!-- 基本信息 -->
+    <view class="form-section">
+      <view class="section-title">基本信息</view>
+      
+      <!-- 科目选择 -->
+      <view class="form-item">
+        <view class="item-label">科目</view>
+        <picker range="{{subjects}}" range-key="name" value="{{selectedSubjectIndex}}" bindchange="onSubjectChange">
+          <view class="picker-display">
+            {{formData.subject || '请选择科目'}}
+            <text class="picker-arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 章节选择 -->
+      <view class="form-item" wx:if="{{chapters.length > 0}}">
+        <view class="item-label">章节</view>
+        <picker range="{{chapters}}" value="{{selectedChapterIndex}}" bindchange="onChapterChange">
+          <view class="picker-display">
+            {{formData.chapter || '请选择章节'}}
+            <text class="picker-arrow">></text>
+          </view>
+        </picker>
+      </view>
+
+      <!-- 知识点 -->
+      <view class="form-item">
+        <view class="item-label">知识点</view>
+        <input 
+          class="form-input" 
+          placeholder="请输入知识点（可选）"
+          value="{{formData.knowledgePoint}}"
+          data-field="knowledgePoint"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <!-- 难度等级 -->
+      <view class="form-item">
+        <view class="item-label">难度等级</view>
+        <view class="difficulty-options">
+          <block wx:for="{{difficultyOptions}}" wx:key="value">
+            <view class="difficulty-item {{formData.difficulty === item.value ? 'active' : ''}}"
+                  bindtap="onDifficultyChange" data-difficulty="{{item.value}}">
+              <view class="difficulty-stars">
+                <block wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="star">
+                  <text class="star {{star <= item.value ? 'filled' : ''}}">★</text>
+                </block>
+              </view>
+              <text class="difficulty-label">{{item.label}}</text>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 题目内容 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text>题目内容</text>
+        <text class="section-subtitle" wx:if="{{inputMode === 'image'}}">图片模式：只需上传题目图片</text>
+      </view>
+
+      <!-- 题目图片 -->
+      <view class="form-item">
+        <view class="item-label {{inputMode === 'image' ? 'required' : ''}}">题目图片</view>
+        <view class="image-upload {{inputMode === 'image' ? 'primary' : ''}}">
+          <view wx:if="{{!formData.questionImage}}" class="upload-btn" bindtap="chooseQuestionImage">
+            <text class="upload-icon">📷</text>
+            <text class="upload-text">{{inputMode === 'image' ? '拍摄或选择题目图片' : '添加题目图片'}}</text>
+            <text class="upload-hint" wx:if="{{inputMode === 'image'}}">支持拍照或从相册选择</text>
+          </view>
+          <view wx:else class="image-preview">
+            <image src="{{formData.questionImage}}" mode="aspectFit" bindtap="previewQuestionImage" />
+            <view class="image-actions">
+              <button class="change-btn" bindtap="chooseQuestionImage">更换</button>
+              <button class="remove-btn" bindtap="removeQuestionImage">删除</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 题目描述 -->
+      <view class="form-item" wx:if="{{inputMode === 'text'}}">
+        <view class="item-label required">题目描述</view>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入题目内容..."
+          value="{{formData.question}}"
+          data-field="question"
+          bindinput="onInputChange"
+          maxlength="1000"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <!-- 图片模式下的可选题目描述 -->
+      <view class="form-item" wx:if="{{inputMode === 'image'}}">
+        <view class="item-label">题目描述（可选）</view>
+        <textarea
+          class="form-textarea optional"
+          placeholder="可以添加题目的文字描述或备注..."
+          value="{{formData.question}}"
+          data-field="question"
+          bindinput="onInputChange"
+          maxlength="1000"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+    </view>
+
+    <!-- 答案解析 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text>答案解析</text>
+        <text class="section-subtitle" wx:if="{{inputMode === 'image'}}">图片模式：上传答案图片即可</text>
+      </view>
+
+      <!-- 答案图片 -->
+      <view class="form-item">
+        <view class="item-label {{inputMode === 'image' ? 'required' : ''}}">答案图片</view>
+        <view class="image-upload {{inputMode === 'image' ? 'primary' : ''}}">
+          <view wx:if="{{!formData.answerImage}}" class="upload-btn" bindtap="chooseAnswerImage">
+            <text class="upload-icon">📷</text>
+            <text class="upload-text">{{inputMode === 'image' ? '拍摄或选择答案图片' : '添加答案图片'}}</text>
+            <text class="upload-hint" wx:if="{{inputMode === 'image'}}">支持拍照或从相册选择</text>
+          </view>
+          <view wx:else class="image-preview">
+            <image src="{{formData.answerImage}}" mode="aspectFit" bindtap="previewAnswerImage" />
+            <view class="image-actions">
+              <button class="change-btn" bindtap="chooseAnswerImage">更换</button>
+              <button class="remove-btn" bindtap="removeAnswerImage">删除</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 我的答案 -->
+      <view class="form-item" wx:if="{{inputMode === 'text'}}">
+        <view class="item-label">我的答案</view>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入你的错误答案..."
+          value="{{formData.myAnswer}}"
+          data-field="myAnswer"
+          bindinput="onInputChange"
+          maxlength="500"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <!-- 正确答案 -->
+      <view class="form-item" wx:if="{{inputMode === 'text'}}">
+        <view class="item-label required">正确答案</view>
+        <textarea
+          class="form-textarea"
+          placeholder="请输入正确答案..."
+          value="{{formData.correctAnswer}}"
+          data-field="correctAnswer"
+          bindinput="onInputChange"
+          maxlength="500"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <!-- 图片模式下的可选文字答案 -->
+      <view class="form-item" wx:if="{{inputMode === 'image'}}">
+        <view class="item-label">我的答案（可选）</view>
+        <textarea
+          class="form-textarea optional"
+          placeholder="可以记录你的错误答案..."
+          value="{{formData.myAnswer}}"
+          data-field="myAnswer"
+          bindinput="onInputChange"
+          maxlength="500"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <view class="form-item" wx:if="{{inputMode === 'image'}}">
+        <view class="item-label">正确答案（可选）</view>
+        <textarea
+          class="form-textarea optional"
+          placeholder="可以记录正确答案的文字说明..."
+          value="{{formData.correctAnswer}}"
+          data-field="correctAnswer"
+          bindinput="onInputChange"
+          maxlength="500"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+
+      <!-- 解析说明 -->
+      <view class="form-item">
+        <view class="item-label">解析说明</view>
+        <textarea
+          class="form-textarea optional"
+          placeholder="请输入解析说明（可选）..."
+          value="{{formData.explanation}}"
+          data-field="explanation"
+          bindinput="onInputChange"
+          maxlength="1000"
+          show-confirm-bar="{{false}}"
+        />
+      </view>
+    </view>
+
+    <!-- 标签管理 -->
+    <view class="form-section">
+      <view class="section-title">
+        <text>标签</text>
+        <button class="add-tag-btn" bindtap="showTagInput">+ 添加标签</button>
+      </view>
+      
+      <!-- 已有标签 -->
+      <view class="tags-list" wx:if="{{formData.tags.length > 0}}">
+        <block wx:for="{{formData.tags}}" wx:key="*this" wx:for-item="tag" wx:for-index="index">
+          <view class="tag-item">
+            <text class="tag-text">{{tag}}</text>
+            <text class="tag-remove" bindtap="removeTag" data-index="{{index}}">×</text>
+          </view>
+        </block>
+      </view>
+
+      <!-- 标签输入 -->
+      <view class="tag-input-container" wx:if="{{showTagInput}}">
+        <input 
+          class="tag-input" 
+          placeholder="输入标签名称"
+          value="{{tagInput}}"
+          bindinput="onTagInput"
+          confirm-type="done"
+          bindconfirm="addTag"
+        />
+        <view class="tag-input-actions">
+          <button class="tag-confirm-btn" bindtap="addTag">确定</button>
+          <button class="tag-cancel-btn" bindtap="cancelTagInput">取消</button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <button class="save-btn" bindtap="saveMistake" disabled="{{submitting}}">
+      {{submitting ? '保存中...' : (isEdit ? '更新错题' : '保存错题')}}
+    </button>
+  </view>
+</view>

@@ -1,0 +1,213 @@
+<view class="container" style="--theme-color: {{themeColor}}">
+  <!-- 头部操作 -->
+  <view class="header-actions">
+    <button class="add-btn" bindtap="showAddSubject">
+      <text class="btn-icon">➕</text>
+      <text class="btn-text">添加科目</text>
+    </button>
+    <button class="reset-btn" bindtap="resetToDefault">
+      <text class="btn-icon">🔄</text>
+      <text class="btn-text">重置默认</text>
+    </button>
+  </view>
+
+  <!-- 数据管理 -->
+  <view class="data-actions">
+    <button class="data-btn" bindtap="exportSubjects">
+      <text class="btn-icon">📤</text>
+      <text class="btn-text">导出配置</text>
+    </button>
+    <button class="data-btn" bindtap="importSubjects">
+      <text class="btn-icon">📥</text>
+      <text class="btn-text">导入配置</text>
+    </button>
+  </view>
+
+  <!-- 科目列表 -->
+  <view class="subjects-list">
+    <block wx:for="{{subjects}}" wx:key="id" wx:for-item="subject" wx:for-index="index">
+      <view class="subject-card">
+        <!-- 科目头部 -->
+        <view class="subject-header">
+          <view class="subject-info">
+            <view class="subject-color" style="background-color: {{subject.color}}"></view>
+            <view class="subject-name">{{subject.name}}</view>
+          </view>
+          <view class="subject-actions">
+            <view class="action-btn edit-btn" bindtap="showEditSubject" data-index="{{index}}">✏️</view>
+            <view class="action-btn delete-btn" bindtap="deleteSubject" data-index="{{index}}">🗑️</view>
+          </view>
+        </view>
+
+        <!-- 章节列表 -->
+        <view class="chapters-list" wx:if="{{subject.chapters.length > 0}}">
+          <view class="chapters-title">章节</view>
+          <view class="chapters-grid">
+            <block wx:for="{{subject.chapters}}" wx:key="*this" wx:for-item="chapter">
+              <view class="chapter-tag">{{chapter}}</view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空状态 -->
+    <view wx:if="{{subjects.length === 0}}" class="empty-state">
+      <view class="empty-icon">📚</view>
+      <view class="empty-text">还没有科目配置</view>
+      <view class="empty-hint">点击"添加科目"开始配置</view>
+    </view>
+  </view>
+
+  <!-- 添加科目对话框 -->
+  <view class="dialog-overlay" wx:if="{{showAddDialog}}" bindtap="hideAddDialog">
+    <view class="dialog" catchtap="">
+      <view class="dialog-header">
+        <view class="dialog-title">添加科目</view>
+        <view class="dialog-close" bindtap="hideAddDialog">✕</view>
+      </view>
+
+      <view class="dialog-content">
+        <!-- 科目名称 -->
+        <view class="form-item">
+          <view class="item-label">科目名称</view>
+          <input
+            class="form-input"
+            placeholder="请输入科目名称"
+            value="{{newSubject.name}}"
+            bindinput="onSubjectNameInput"
+          />
+        </view>
+
+        <!-- 科目颜色 -->
+        <view class="form-item">
+          <view class="item-label">科目颜色</view>
+          <view class="color-options">
+            <block wx:for="{{colorOptions}}" wx:key="*this" wx:for-item="color">
+              <view class="color-option {{newSubject.color === color ? 'active' : ''}}"
+                    style="background-color: {{color}}"
+                    bindtap="selectColor" data-color="{{color}}">
+                <view wx:if="{{newSubject.color === color}}" class="color-check">✓</view>
+              </view>
+            </block>
+          </view>
+        </view>
+
+        <!-- 章节管理 -->
+        <view class="form-item">
+          <view class="item-label">
+            <text>章节</text>
+            <button class="add-chapter-btn" bindtap="showChapterInput">+ 添加</button>
+          </view>
+
+          <!-- 已有章节 -->
+          <view class="chapters-list" wx:if="{{newSubject.chapters.length > 0}}">
+            <block wx:for="{{newSubject.chapters}}" wx:key="*this" wx:for-item="chapter" wx:for-index="index">
+              <view class="chapter-item">
+                <text class="chapter-text">{{chapter}}</text>
+                <text class="chapter-remove" bindtap="removeChapter" data-index="{{index}}">×</text>
+              </view>
+            </block>
+          </view>
+
+          <!-- 章节输入 -->
+          <view class="chapter-input-container" wx:if="{{showChapterInput}}">
+            <input
+              class="chapter-input"
+              placeholder="输入章节名称"
+              value="{{newChapter}}"
+              bindinput="onChapterInput"
+              confirm-type="done"
+              bindconfirm="addChapter"
+            />
+            <view class="chapter-input-actions">
+              <button class="chapter-confirm-btn" bindtap="addChapter">确定</button>
+              <button class="chapter-cancel-btn" bindtap="hideChapterInput">取消</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="dialog-actions">
+        <button class="dialog-btn cancel" bindtap="hideAddDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="saveNewSubject">保存</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑科目对话框 -->
+  <view class="dialog-overlay" wx:if="{{showEditDialog}}" bindtap="hideEditDialog">
+    <view class="dialog" catchtap="">
+      <view class="dialog-header">
+        <view class="dialog-title">编辑科目</view>
+        <view class="dialog-close" bindtap="hideEditDialog">✕</view>
+      </view>
+
+      <view class="dialog-content">
+        <!-- 科目名称 -->
+        <view class="form-item">
+          <view class="item-label">科目名称</view>
+          <input
+            class="form-input"
+            placeholder="请输入科目名称"
+            value="{{editingSubject.name}}"
+            bindinput="onSubjectNameInput"
+          />
+        </view>
+
+        <!-- 科目颜色 -->
+        <view class="form-item">
+          <view class="item-label">科目颜色</view>
+          <view class="color-options">
+            <block wx:for="{{colorOptions}}" wx:key="*this" wx:for-item="color">
+              <view class="color-option {{editingSubject.color === color ? 'active' : ''}}"
+                    style="background-color: {{color}}"
+                    bindtap="selectColor" data-color="{{color}}">
+                <view wx:if="{{editingSubject.color === color}}" class="color-check">✓</view>
+              </view>
+            </block>
+          </view>
+        </view>
+
+        <!-- 章节管理 -->
+        <view class="form-item">
+          <view class="item-label">
+            <text>章节</text>
+            <button class="add-chapter-btn" bindtap="showChapterInput">+ 添加</button>
+          </view>
+
+          <!-- 已有章节 -->
+          <view class="chapters-list" wx:if="{{editingSubject.chapters.length > 0}}">
+            <block wx:for="{{editingSubject.chapters}}" wx:key="*this" wx:for-item="chapter" wx:for-index="index">
+              <view class="chapter-item">
+                <text class="chapter-text">{{chapter}}</text>
+                <text class="chapter-remove" bindtap="removeChapter" data-index="{{index}}">×</text>
+              </view>
+            </block>
+          </view>
+
+          <!-- 章节输入 -->
+          <view class="chapter-input-container" wx:if="{{showChapterInput}}">
+            <input
+              class="chapter-input"
+              placeholder="输入章节名称"
+              value="{{newChapter}}"
+              bindinput="onChapterInput"
+              confirm-type="done"
+              bindconfirm="addChapter"
+            />
+            <view class="chapter-input-actions">
+              <button class="chapter-confirm-btn" bindtap="addChapter">确定</button>
+              <button class="chapter-cancel-btn" bindtap="hideChapterInput">取消</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="dialog-actions">
+        <button class="dialog-btn cancel" bindtap="hideEditDialog">取消</button>
+        <button class="dialog-btn confirm" bindtap="saveEditSubject">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

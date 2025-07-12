@@ -1,0 +1,256 @@
+<view class="container fade-in" style="--theme-color: {{themeColor}}">
+  <!-- 头部统计卡片 -->
+  <view class="header-stats slide-up">
+    <view class="stats-card" bindtap="viewStats">
+      <view class="stats-icon">📚</view>
+      <view class="stats-content">
+        <view class="stats-number">{{stats.totalMistakes || 0}}</view>
+        <view class="stats-label">总错题</view>
+      </view>
+    </view>
+    <view class="stats-card" bindtap="startReview">
+      <view class="stats-icon">⏰</view>
+      <view class="stats-content">
+        <view class="stats-number">{{stats.reviewStats.needReview || 0}}</view>
+        <view class="stats-label">待复习</view>
+      </view>
+    </view>
+    <view class="stats-card" bindtap="viewStats">
+      <view class="stats-icon">✅</view>
+      <view class="stats-content">
+        <view class="stats-number">{{stats.reviewStats.totalReviews || 0}}</view>
+        <view class="stats-label">已复习</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热力图区域 -->
+  <view class="heatmap-section card" wx:if="{{heatmapData.length > 0}}">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="title-icon">🔥</text>
+        <text class="title-text">学习热力图</text>
+      </view>
+      <view class="section-subtitle">{{heatmapSubtitle}}</view>
+    </view>
+    <!-- 这里可以集成热力图组件 -->
+    <view class="heatmap-placeholder">
+      <text class="placeholder-text">GitHub风格热力图</text>
+    </view>
+  </view>
+
+  <!-- 搜索和筛选 -->
+  <view class="search-filter-bar card">
+    <view class="search-box">
+      <view class="search-icon">🔍</view>
+      <input
+        placeholder="搜索错题内容、科目、标签..."
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        class="search-input"
+      />
+    </view>
+    <button class="filter-btn {{showFilterMenu ? 'active' : ''}}" bindtap="toggleFilterMenu">
+      <text class="filter-icon">🎛️</text>
+      <text class="filter-text">筛选</text>
+      <view class="filter-dot" wx:if="{{currentFilter !== 'all'}}"></view>
+    </button>
+  </view>
+
+  <!-- 筛选菜单 -->
+  <view class="filter-menu {{showFilterMenu ? 'show' : ''}}" bindtap="closeFilterMenu">
+    <view class="filter-content" catchtap="stopPropagation">
+      <view class="filter-header">
+        <text class="filter-header-title">筛选条件</text>
+        <button class="filter-close" bindtap="closeFilterMenu">✕</button>
+      </view>
+
+      <view class="filter-section">
+        <view class="filter-title">
+          <text class="filter-title-icon">📋</text>
+          <text>筛选类型</text>
+        </view>
+        <view class="filter-options">
+          <button class="filter-option {{currentFilter === 'all' ? 'active' : ''}}"
+                  bindtap="selectFilter" data-filter="all">
+            <text class="option-icon">📚</text>
+            <text>全部</text>
+          </button>
+          <button class="filter-option {{currentFilter === 'review' ? 'active' : ''}}"
+                  bindtap="selectFilter" data-filter="review">
+            <text class="option-icon">⏰</text>
+            <text>待复习</text>
+          </button>
+          <button class="filter-option {{currentFilter === 'starred' ? 'active' : ''}}"
+                  bindtap="selectFilter" data-filter="starred">
+            <text class="option-icon">⭐</text>
+            <text>已收藏</text>
+          </button>
+        </view>
+      </view>
+
+      <view class="filter-section">
+        <view class="filter-title">
+          <text class="filter-title-icon">🎯</text>
+          <text>按科目</text>
+        </view>
+        <view class="filter-options subject-grid">
+          <button class="filter-option subject-option {{selectedSubject === '' ? 'active' : ''}}"
+                  bindtap="selectSubject" data-subject="">
+            <text class="option-icon">📖</text>
+            <text>全部科目</text>
+          </button>
+          <block wx:for="{{subjects}}" wx:key="id">
+            <button class="filter-option subject-option {{selectedSubject === item.name ? 'active' : ''}}"
+                    bindtap="selectSubject" data-subject="{{item.name}}"
+                    style="border-color: {{item.color}}; background: {{selectedSubject === item.name ? item.color : 'transparent'}}">
+              <text class="subject-name">{{item.name}}</text>
+            </button>
+          </block>
+        </view>
+      </view>
+
+      <view class="filter-section">
+        <view class="filter-title">
+          <text class="filter-title-icon">📊</text>
+          <text>按掌握程度</text>
+        </view>
+        <view class="filter-options mastery-grid">
+          <button class="filter-option mastery-option {{selectedMastery === 0 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="0">
+            <text class="mastery-icon">📚</text>
+            <text>全部</text>
+          </button>
+          <button class="filter-option mastery-option {{selectedMastery === 1 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="1">
+            <text class="mastery-icon">🌱</text>
+            <text>初学</text>
+          </button>
+          <button class="filter-option mastery-option {{selectedMastery === 2 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="2">
+            <text class="mastery-icon">🌿</text>
+            <text>了解</text>
+          </button>
+          <button class="filter-option mastery-option {{selectedMastery === 3 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="3">
+            <text class="mastery-icon">🌳</text>
+            <text>熟悉</text>
+          </button>
+          <button class="filter-option mastery-option {{selectedMastery === 4 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="4">
+            <text class="mastery-icon">🏆</text>
+            <text>掌握</text>
+          </button>
+          <button class="filter-option mastery-option {{selectedMastery === 5 ? 'active' : ''}}"
+                  bindtap="selectMastery" data-mastery="5">
+            <text class="mastery-icon">👑</text>
+            <text>精通</text>
+          </button>
+        </view>
+      </view>
+
+      <view class="filter-actions">
+        <button class="filter-action-btn reset" bindtap="resetFilters">重置</button>
+        <button class="filter-action-btn apply" bindtap="applyFilters">应用筛选</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速操作按钮 -->
+  <view class="quick-actions">
+    <button class="action-btn primary" bindtap="addMistake">
+      <text class="btn-icon">➕</text>
+      <text class="btn-text">添加</text>
+    </button>
+    <button class="action-btn secondary" bindtap="startReview">
+      <text class="btn-icon">📖</text>
+      <text class="btn-text">复习</text>
+    </button>
+    <button class="action-btn secondary" bindtap="manageSubjects">
+      <text class="btn-icon">📚</text>
+      <text class="btn-text">科目</text>
+    </button>
+  </view>
+
+  <!-- 错题列表 -->
+  <view class="mistakes-list" wx:if="{{!loading}}">
+    <view wx:if="{{filteredMistakes.length === 0}}" class="empty-state">
+      <view class="empty-icon">📝</view>
+      <view class="empty-text">
+        <block wx:if="{{currentFilter === 'all' && !searchKeyword}}">
+          还没有错题记录
+          <text class="empty-hint">点击"添加错题"开始记录吧</text>
+        </block>
+        <block wx:else>
+          没有找到相关错题
+          <text class="empty-hint">试试调整筛选条件</text>
+        </block>
+      </view>
+    </view>
+
+    <block wx:for="{{filteredMistakes}}" wx:key="id">
+      <view class="mistake-card" bindtap="viewMistake" data-id="{{item.id}}">
+        <!-- 错题头部 -->
+        <view class="mistake-header">
+          <view class="subject-tag" style="background-color: {{item.subjectColor || themeColor}}">
+            {{item.subject}}
+          </view>
+          <view class="mistake-actions">
+            <view class="star-btn {{item.isStarred ? 'starred' : ''}}" 
+                  bindtap="toggleStar" data-id="{{item.id}}">
+              {{item.isStarred ? '⭐' : '☆'}}
+            </view>
+            <view class="edit-btn" bindtap="editMistake" data-id="{{item.id}}">✏️</view>
+            <view class="delete-btn" bindtap="deleteMistake" data-id="{{item.id}}">🗑️</view>
+          </view>
+        </view>
+
+        <!-- 错题内容 -->
+        <view class="mistake-content">
+          <view class="question-text">{{item.question}}</view>
+          <view wx:if="{{item.questionImage}}" class="question-image">
+            <image src="{{item.questionImage}}" mode="widthFix" />
+          </view>
+          
+          <view wx:if="{{item.knowledgePoint}}" class="knowledge-point">
+            <text class="label">知识点：</text>{{item.knowledgePoint}}
+          </view>
+          
+          <view wx:if="{{item.tags.length > 0}}" class="tags">
+            <block wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag">
+              <text class="tag">{{tag}}</text>
+            </block>
+          </view>
+        </view>
+
+        <!-- 错题状态 -->
+        <view class="mistake-status">
+          <view class="mastery-level">
+            <text class="mastery-label">掌握程度：</text>
+            <view class="mastery-stars">
+              <block wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="star">
+                <text class="star {{star <= item.masteryLevel ? 'filled' : ''}}">★</text>
+              </block>
+            </view>
+          </view>
+          
+          <view class="review-info">
+            <text class="review-times">复习{{item.reviewTimes}}次</text>
+            <text class="create-time">{{item.createTimeText}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 添加错题浮动按钮 -->
+  <view class="fab" bindtap="addMistake">
+    <text class="fab-icon">➕</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>

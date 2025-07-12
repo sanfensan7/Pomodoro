@@ -1,0 +1,443 @@
+.container {
+  padding: 20rpx;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  --theme-color: #ff6b6b;
+}
+
+/* 头部操作 */
+.header-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.add-btn, .reset-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25rpx 20rpx;
+  border-radius: 20rpx;
+  border: none;
+  font-size: 24rpx;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, var(--theme-color), #ff8a80);
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.25);
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 8rpx rgba(255, 107, 107, 0.3);
+}
+
+.reset-btn {
+  background: white;
+  color: #666;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.08);
+  border: 1rpx solid #f0f0f0;
+}
+
+.reset-btn:active {
+  transform: scale(0.95);
+  background: #f8f8f8;
+}
+
+.btn-icon {
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+}
+
+.btn-text {
+  font-size: 24rpx;
+}
+
+/* 数据管理操作 */
+.data-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 30rpx;
+  padding: 0 10rpx;
+}
+
+.data-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 15rpx;
+  border-radius: 16rpx;
+  border: none;
+  font-size: 22rpx;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  color: #666;
+  border: 1rpx solid #e9ecef;
+}
+
+.data-btn:active {
+  transform: scale(0.95);
+  background: #e9ecef;
+}
+
+.data-btn .btn-icon {
+  font-size: 24rpx;
+  margin-bottom: 6rpx;
+}
+
+.data-btn .btn-text {
+  font-size: 20rpx;
+  color: #666;
+}
+
+/* 科目列表 */
+.subjects-list {
+  margin-bottom: 100rpx;
+}
+
+.subject-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+}
+
+/* 科目头部 */
+.subject-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.subject-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.subject-color {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+}
+
+.subject-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.subject-actions {
+  display: flex;
+  gap: 15rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 28rpx;
+  transition: all 0.3s;
+}
+
+.edit-btn {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.delete-btn {
+  background: #ffebee;
+  color: #f44336;
+}
+
+/* 章节列表 */
+.chapters-title {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 15rpx;
+}
+
+.chapters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.chapter-tag {
+  background: #f0f0f0;
+  color: #666;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 100rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 对话框 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background: white;
+  border-radius: 16rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.dialog-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.dialog-close {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 28rpx;
+}
+
+.dialog-content {
+  padding: 30rpx;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.item-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 15rpx;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #333;
+  background: #fafafa;
+}
+
+.form-input:focus {
+  border-color: var(--theme-color);
+  background: white;
+}
+
+/* 颜色选择 */
+.color-options {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15rpx;
+}
+
+.color-option {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.color-option.active {
+  transform: scale(1.1);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2);
+}
+
+.color-check {
+  color: white;
+  font-size: 24rpx;
+  font-weight: bold;
+  text-shadow: 0 1rpx 2rpx rgba(0,0,0,0.3);
+}
+
+/* 章节管理 */
+.add-chapter-btn {
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 20rpx;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+}
+
+.chapters-list {
+  margin-bottom: 20rpx;
+}
+
+.chapter-item {
+  background: #f0f0f0;
+  border-radius: 20rpx;
+  padding: 8rpx 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+}
+
+.chapter-text {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.chapter-remove {
+  font-size: 28rpx;
+  color: #999;
+  font-weight: bold;
+  margin-left: 10rpx;
+}
+
+.chapter-input-container {
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  background: #fafafa;
+}
+
+.chapter-input {
+  width: 100%;
+  height: 60rpx;
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 15rpx;
+}
+
+.chapter-input-actions {
+  display: flex;
+  gap: 15rpx;
+  justify-content: flex-end;
+}
+
+.chapter-confirm-btn {
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  border-radius: 20rpx;
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+}
+
+.chapter-cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+  border: none;
+  border-radius: 20rpx;
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+}
+
+/* 对话框操作 */
+.dialog-actions {
+  display: flex;
+  gap: 1rpx;
+  padding: 20rpx;
+  background: #f8f8f8;
+  border-radius: 0 0 20rpx 20rpx;
+}
+
+.dialog-btn {
+  flex: 1;
+  height: 76rpx;
+  border: none;
+  font-size: 28rpx;
+  font-weight: 600;
+  border-radius: 38rpx;
+  transition: all 0.3s ease;
+}
+
+.dialog-btn.cancel {
+  background: white;
+  color: #666;
+  border: 1rpx solid #e0e0e0;
+}
+
+.dialog-btn.cancel:active {
+  background: #f5f5f5;
+  transform: scale(0.98);
+}
+
+.dialog-btn.confirm {
+  background: linear-gradient(135deg, var(--theme-color), #ff8a80);
+  color: white;
+  box-shadow: 0 2rpx 8rpx rgba(255, 107, 107, 0.3);
+}
+
+.dialog-btn.confirm:active {
+  transform: scale(0.98);
+  box-shadow: 0 1rpx 4rpx rgba(255, 107, 107, 0.4);
+}

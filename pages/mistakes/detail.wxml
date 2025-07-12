@@ -1,0 +1,181 @@
+<view class="container" style="--theme-color: {{themeColor}}" wx:if="{{!loading && mistake}}">
+  <!-- 头部信息 -->
+  <view class="header">
+    <view class="subject-info">
+      <view class="subject-tag" style="background-color: {{mistake.subjectColor}}">
+        {{mistake.subject}}
+      </view>
+      <view class="chapter-text" wx:if="{{mistake.chapter}}">{{mistake.chapter}}</view>
+    </view>
+
+    <view class="header-actions">
+      <view class="action-btn star-btn {{mistake.isStarred ? 'starred' : ''}}" bindtap="toggleStar">
+        {{mistake.isStarred ? '⭐' : '☆'}}
+      </view>
+      <view class="action-btn edit-btn" bindtap="editMistake">✏️</view>
+      <view class="action-btn delete-btn" bindtap="deleteMistake">🗑️</view>
+      <view class="action-btn share-btn" bindtap="shareMistake">📤</view>
+    </view>
+  </view>
+
+  <!-- 题目内容 -->
+  <view class="question-section">
+    <view class="section-title">题目</view>
+    <view class="question-content">
+      <text class="question-text">{{mistake.question}}</text>
+      <view wx:if="{{mistake.questionImage}}" class="question-image" bindtap="previewImage">
+        <image src="{{mistake.questionImage}}" mode="widthFix" />
+      </view>
+    </view>
+
+    <view wx:if="{{mistake.knowledgePoint}}" class="knowledge-point">
+      <text class="label">知识点：</text>{{mistake.knowledgePoint}}
+    </view>
+
+    <view wx:if="{{mistake.tags.length > 0}}" class="tags">
+      <block wx:for="{{mistake.tags}}" wx:key="*this" wx:for-item="tag">
+        <text class="tag">{{tag}}</text>
+      </block>
+    </view>
+  </view>
+
+  <!-- 复习模式 -->
+  <view class="review-section" wx:if="{{reviewMode && !showAnswer}}">
+    <view class="section-title">复习答题</view>
+    <textarea
+      class="answer-input"
+      placeholder="请输入你的答案..."
+      value="{{userAnswer}}"
+      bindinput="onAnswerInput"
+      maxlength="500"
+    />
+    <view class="review-actions">
+      <button class="review-btn correct" bindtap="submitReview" data-correct="{{true}}">
+        ✓ 答对了
+      </button>
+      <button class="review-btn wrong" bindtap="submitReview" data-correct="{{false}}">
+        ✗ 答错了
+      </button>
+    </view>
+  </view>
+
+  <!-- 我的答案 -->
+  <view class="answer-section" wx:if="{{mistake.myAnswer}}">
+    <view class="section-title">我的答案</view>
+    <view class="answer-content wrong-answer">
+      {{mistake.myAnswer}}
+    </view>
+  </view>
+
+  <!-- 正确答案 -->
+  <view class="answer-section">
+    <view class="section-title" bindtap="toggleAnswer">
+      <text>正确答案</text>
+      <text class="toggle-icon">{{showAnswer ? '👁️' : '👁️‍🗨️'}}</text>
+    </view>
+    <view class="answer-content correct-answer" wx:if="{{showAnswer}}">
+      {{mistake.correctAnswer}}
+    </view>
+    <view class="answer-placeholder" wx:else bindtap="toggleAnswer">
+      点击查看正确答案
+    </view>
+  </view>
+
+  <!-- 解析说明 -->
+  <view class="explanation-section" wx:if="{{mistake.explanation}}">
+    <view class="section-title" bindtap="toggleExplanation">
+      <text>解析说明</text>
+      <text class="toggle-icon">{{showExplanation ? '👁️' : '👁️‍🗨️'}}</text>
+    </view>
+    <view class="explanation-content" wx:if="{{showExplanation}}">
+      {{mistake.explanation}}
+    </view>
+    <view class="explanation-placeholder" wx:else bindtap="toggleExplanation">
+      点击查看解析说明
+    </view>
+  </view>
+
+  <!-- 错题状态 -->
+  <view class="status-section">
+    <view class="section-title">错题状态</view>
+
+    <view class="status-grid">
+      <view class="status-item">
+        <view class="status-label">难度等级</view>
+        <view class="difficulty-display">
+          <block wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="star">
+            <text class="star {{star <= mistake.difficulty ? 'filled' : ''}}">★</text>
+          </block>
+        </view>
+      </view>
+
+      <view class="status-item">
+        <view class="status-label">掌握程度</view>
+        <view class="mastery-display">
+          <view class="mastery-level" style="color: {{getMasteryColor(mistake.masteryLevel)}}">
+            {{getMasteryText(mistake.masteryLevel)}}
+          </view>
+          <view class="mastery-stars">
+            <block wx:for="{{[1,2,3,4,5]}}" wx:key="*this" wx:for-item="star">
+              <text class="star {{star <= mistake.masteryLevel ? 'filled' : ''}}">★</text>
+            </block>
+          </view>
+        </view>
+      </view>
+
+      <view class="status-item">
+        <view class="status-label">复习次数</view>
+        <view class="status-value">{{mistake.reviewTimes}}次</view>
+      </view>
+
+      <view class="status-item">
+        <view class="status-label">创建时间</view>
+        <view class="status-value">{{formatTime(mistake.createTime)}}</view>
+      </view>
+
+      <view class="status-item" wx:if="{{mistake.lastReviewTime}}">
+        <view class="status-label">上次复习</view>
+        <view class="status-value">{{formatTime(mistake.lastReviewTime)}}</view>
+      </view>
+
+      <view class="status-item">
+        <view class="status-label">下次复习</view>
+        <view class="status-value">{{getNextReviewText(mistake.nextReviewTime)}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 复习历史 -->
+  <view class="history-section" wx:if="{{mistake.reviewHistory.length > 0}}">
+    <view class="section-title">复习历史</view>
+    <view class="history-list">
+      <block wx:for="{{mistake.reviewHistory}}" wx:key="date" wx:for-item="record">
+        <view class="history-item">
+          <view class="history-date">{{formatTime(record.date)}}</view>
+          <view class="history-result {{record.result}}">
+            {{record.result === 'correct' ? '✓ 正确' : '✗ 错误'}}
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-actions" wx:if="{{!reviewMode}}">
+    <button class="action-button primary" bindtap="editMistake">编辑错题</button>
+    <button class="action-button secondary" bindtap="submitReview" data-correct="{{false}}">标记为需复习</button>
+  </view>
+</view>
+
+<!-- 加载状态 -->
+<view wx:if="{{loading}}" class="loading-container">
+  <view class="loading-spinner"></view>
+  <text class="loading-text">加载中...</text>
+</view>
+
+<!-- 错误状态 -->
+<view wx:if="{{!loading && !mistake}}" class="error-container">
+  <view class="error-icon">❌</view>
+  <text class="error-text">错题不存在或已被删除</text>
+  <button class="back-btn" bindtap="navigateBack">返回</button>
+</view>

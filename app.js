@@ -1,4 +1,6 @@
 // app.js
+const vibrate = require('./utils/vibrate');
+
 App({
   globalData: {
     themeColor: '#ff6b6b',
@@ -7,6 +9,9 @@ App({
     nextMode: null,
     autoStart: false
   },
+
+  // 全局震动方法
+  vibrate: vibrate,
   
   onLaunch: function() {
     // 注释掉图标生成代码，使用预先生成的图标

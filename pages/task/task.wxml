@@ -1,22 +1,79 @@
-<view class="container" style="--theme-color: {{themeColor}}">
-  <view class="header">
-    <text class="title">任务管理</text>
-    <view class="header-actions">
-      <view class="sort-btn" bindtap="toggleSortMenu">
-        <text class="sort-icon">⇅</text>
+<view class="container fade-in" style="--theme-color: {{themeColor}}">
+  <!-- 头部区域 -->
+  <view class="header card">
+    <view class="header-content">
+      <view class="header-left">
+        <text class="title">📋 任务管理</text>
+        <text class="subtitle">{{tasks.length}} 个任务</text>
       </view>
-      <view class="add-icon" bindtap="toggleTaskForm">
-        <text>+</text>
+      <view class="header-actions">
+        <button class="action-btn sort-btn" bindtap="toggleSortMenu">
+          <text class="btn-icon">🔄</text>
+          <text class="btn-text">排序</text>
+        </button>
+        <button class="action-btn add-btn" bindtap="toggleTaskForm">
+          <text class="btn-icon">➕</text>
+          <text class="btn-text">添加</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 任务统计 -->
+  <view class="task-stats card" wx:if="{{tasks.length > 0}}">
+    <view class="stat-item">
+      <view class="stat-icon">📝</view>
+      <view class="stat-content">
+        <view class="stat-number">{{tasks.length - completedCount}}</view>
+        <view class="stat-label">待完成</view>
+      </view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-icon">✅</view>
+      <view class="stat-content">
+        <view class="stat-number">{{completedCount}}</view>
+        <view class="stat-label">已完成</view>
+      </view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-icon">📊</view>
+      <view class="stat-content">
+        <view class="stat-number">{{completionRate}}%</view>
+        <view class="stat-label">完成率</view>
       </view>
     </view>
   </view>
 
   <!-- 排序菜单 -->
-  <view class="sort-menu {{showSortMenu ? 'show' : ''}}" wx:if="{{showSortMenu}}">
-    <view class="sort-option" bindtap="sortTasks" data-type="createTime">按创建时间</view>
-    <view class="sort-option" bindtap="sortTasks" data-type="priority">按优先级</view>
-    <view class="sort-option" bindtap="sortTasks" data-type="progress">按进度</view>
-    <view class="sort-option" bindtap="sortTasks" data-type="name">按名称</view>
+  <view class="sort-menu {{showSortMenu ? 'show' : ''}}" bindtap="closeSortMenu">
+    <view class="sort-content" catchtap="stopPropagation">
+      <view class="sort-header">
+        <text class="sort-title">排序方式</text>
+        <button class="sort-close" bindtap="closeSortMenu">✕</button>
+      </view>
+      <view class="sort-options">
+        <button class="sort-option {{sortType === 'createTime' ? 'active' : ''}}"
+                bindtap="sortTasks" data-type="createTime">
+          <text class="option-icon">🕒</text>
+          <text>按创建时间</text>
+        </button>
+        <button class="sort-option {{sortType === 'priority' ? 'active' : ''}}"
+                bindtap="sortTasks" data-type="priority">
+          <text class="option-icon">⭐</text>
+          <text>按优先级</text>
+        </button>
+        <button class="sort-option {{sortType === 'progress' ? 'active' : ''}}"
+                bindtap="sortTasks" data-type="progress">
+          <text class="option-icon">📈</text>
+          <text>按进度</text>
+        </button>
+        <button class="sort-option {{sortType === 'name' ? 'active' : ''}}"
+                bindtap="sortTasks" data-type="name">
+          <text class="option-icon">🔤</text>
+          <text>按名称</text>
+        </button>
+      </view>
+    </view>
   </view>
   
   <view class="task-list">

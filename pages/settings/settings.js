@@ -1,4 +1,5 @@
 const app = getApp();
+const vibrate = require('../../utils/vibrate');
 
 // 辅助函数：将十六进制颜色转换为RGB
 function hexToRgb(hex) {
@@ -49,26 +50,35 @@ Page({
   },
 
   onLoad: function() {
-    // 获取已保存的设置
-    this.loadSettings();
-    
-    // 获取全局主题色
-    if (app.globalData.themeColor) {
-      this.setData({
-        themeColor: app.globalData.themeColor,
-        themeColorRGB: hexToRgb(app.globalData.themeColor)
-      });
+    console.log('设置页面加载中...');
+
+    try {
+      // 获取已保存的设置
+      this.loadSettings();
+
+      // 获取全局主题色
+      if (app.globalData.themeColor) {
+        this.setData({
+          themeColor: app.globalData.themeColor,
+          themeColorRGB: hexToRgb(app.globalData.themeColor)
+        });
+      }
+
+      console.log('设置页面加载完成');
+    } catch (error) {
+      console.error('设置页面加载失败:', error);
     }
   },
   
   loadSettings: function() {
-    // 从本地存储加载设置
-    const focusDuration = wx.getStorageSync('focusDuration') || 25;
-    const shortBreakDuration = wx.getStorageSync('shortBreakDuration') || 5;
-    const longBreakDuration = wx.getStorageSync('longBreakDuration') || 15;
-    const longBreakInterval = wx.getStorageSync('longBreakInterval') || 4;
-    const timerStyle = wx.getStorageSync('timerStyle') || 'circle';
-    const themeColor = wx.getStorageSync('themeColor') || '#ff6b6b';
+    try {
+      // 从本地存储加载设置
+      const focusDuration = wx.getStorageSync('focusDuration') || 25;
+      const shortBreakDuration = wx.getStorageSync('shortBreakDuration') || 5;
+      const longBreakDuration = wx.getStorageSync('longBreakDuration') || 15;
+      const longBreakInterval = wx.getStorageSync('longBreakInterval') || 4;
+      const timerStyle = wx.getStorageSync('timerStyle') || 'circle';
+      const themeColor = wx.getStorageSync('themeColor') || '#ff6b6b';
     const currentTheme = wx.getStorageSync('currentTheme') || 'red';
     const autoStartBreak = wx.getStorageSync('autoStartBreak');
     const autoStartFocus = wx.getStorageSync('autoStartFocus');
@@ -101,6 +111,29 @@ Page({
       repeatIndex: repeatIndex,
       reminderIntervalIndex: reminderIntervalIndex
     });
+
+    console.log('设置加载完成');
+    } catch (error) {
+      console.error('加载设置失败:', error);
+      // 设置默认值
+      this.setData({
+        focusDurationIndex: 0,
+        shortBreakDurationIndex: 0,
+        longBreakDurationIndex: 2,
+        longBreakIntervalIndex: 3,
+        timerStyle: 'circle',
+        themeColor: '#ff6b6b',
+        themeColorRGB: 'rgb(255, 107, 107)',
+        currentTheme: 'red',
+        autoStartBreak: true,
+        autoStartFocus: false,
+        keepScreenOn: true,
+        vibrateEnabled: true,
+        popupEnabled: true,
+        repeatIndex: 1,
+        reminderIntervalIndex: 1
+      });
+    }
   },
   
   saveSettings: function() {
@@ -156,6 +189,7 @@ Page({
   },
   
   toggleAutoStartBreak: function(e) {
+    vibrate.buttonTap();
     this.setData({
       autoStartBreak: e.detail.value
     });
@@ -186,7 +220,19 @@ Page({
     this.setData({
       vibrateEnabled: value
     });
-    wx.setStorageSync('vibrateEnabled', value);
+    this.saveSettings();
+
+    // 测试震动效果
+    if (value) {
+      wx.vibrateShort({
+        type: 'light'
+      });
+    }
+
+    wx.showToast({
+      title: value ? '已启用震动反馈' : '已关闭震动反馈',
+      icon: 'success'
+    });
 
     // 测试震动
     if (value) {
@@ -240,17 +286,38 @@ Page({
   },
 
   changeTheme: function(e) {
+    vibrate.buttonTap();
+
     const color = e.currentTarget.dataset.color;
     const theme = e.currentTarget.dataset.theme;
-    
+
     this.setData({
       themeColor: color,
       themeColorRGB: hexToRgb(color),
       currentTheme: theme
     });
-    
+
     this.saveSettings();
-    
+
+    // 通知其他页面主题已更改
+    const pages = getCurrentPages();
+    pages.forEach(page => {
+      if (page.route === 'pages/focus/focus' && page.loadSettings) {
+        page.setData({ themeColor: color });
+        // 重新绘制进度环以应用新主题色
+        if (page.drawProgressRing) {
+          setTimeout(() => {
+            page.drawProgressRing();
+          }, 100);
+        }
+        if (page.drawProgressLine) {
+          setTimeout(() => {
+            page.drawProgressLine();
+          }, 100);
+        }
+      }
+    });
+
     wx.showToast({
       title: '主题已更改',
       icon: 'success'
@@ -265,6 +332,14 @@ Page({
     });
 
     this.saveSettings();
+
+    // 通知其他页面计时器样式已更改
+    const pages = getCurrentPages();
+    pages.forEach(page => {
+      if (page.route === 'pages/focus/focus' && page.loadSettings) {
+        page.loadSettings();
+      }
+    });
 
     wx.showToast({
       title: '样式已更改',
