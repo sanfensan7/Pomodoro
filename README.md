@@ -3,7 +3,7 @@
 一个功能丰富的微信小程序，集成番茄工作法、错题本管理、任务管理和娱乐功能，帮助用户提高学习效率和专注度。
 
 [![微信小程序](https://img.shields.io/badge/微信-小程序-brightgreen.svg)](https://developers.weixin.qq.com/miniprogram/dev/)
-[![版本](https://img.shields.io/badge/版本-v2.0.0-blue.svg)](https://github.com/your-repo)
+[![版本](https://img.shields.io/badge/版本-v1.2.2-blue.svg)](https://github.com/your-repo)
 [![许可证](https://img.shields.io/badge/许可证-MIT-yellow.svg)](LICENSE)
 
 ## ✨ 核心功能
@@ -182,15 +182,15 @@ git clone [repository-url]
 - ✨ 新增考研错题本系统
 - ✨ 新增学习热力图可视化
 
-### v1.2.1 (2025-06-14)
+### v1.?.? (忘记记录时间了)
+
 - ✨ 新增数字拼图游戏
 
-### v1.2.0 (2025-03-22)
 - ✨ 新增成就系统和奖励机制
 - 🎨 全面优化界面设计
 - 🔧 完善错误处理和性能优化
 
-### v1.0.0 (2024-12-01)
+### v1.0.0 (2025-3-17)
 - 🎯 基础番茄钟功能
 - ✅ 任务管理系统
 - 📊 数据统计功能
