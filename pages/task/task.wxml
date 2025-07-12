@@ -20,7 +20,7 @@
   </view>
 
   <!-- 任务统计 -->
-  <view class="task-stats card" wx:if="{{tasks.length > 0}}">
+  <view class="task-stats card">
     <view class="stat-item">
       <view class="stat-icon">📝</view>
       <view class="stat-content">

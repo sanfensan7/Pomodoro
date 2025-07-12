@@ -15,8 +15,16 @@
           <view class="progress-fill" style="width: {{(reviewProgress.current / reviewProgress.total) * 100}}%"></view>
         </view>
       </view>
-      <view class="exit-btn" bindtap="exitReview">
-        <text class="exit-icon">✕</text>
+      <view class="header-actions">
+        <!-- 科目选择按钮 -->
+        <view class="subject-selector-btn" bindtap="showSubjectSelector">
+          <text class="subject-icon">📚</text>
+          <text class="subject-text">{{selectedSubject === 'all' ? '全部科目' : selectedSubject}}</text>
+          <text class="dropdown-icon">▼</text>
+        </view>
+        <view class="exit-btn" bindtap="exitReview">
+          <text class="exit-icon">✕</text>
+        </view>
       </view>
     </view>
 
@@ -130,6 +138,30 @@
     <view class="completion-actions">
       <button class="action-btn secondary" bindtap="restartReview">再次复习</button>
       <button class="action-btn primary" bindtap="exitReview">返回</button>
+    </view>
+  </view>
+
+  <!-- 科目选择器弹窗 -->
+  <view class="subject-selector-overlay" wx:if="{{showSubjectSelector}}" bindtap="hideSubjectSelector">
+    <view class="subject-selector-popup" catchtap="">
+      <view class="selector-header">
+        <text class="selector-title">选择复习科目</text>
+        <view class="close-btn" bindtap="hideSubjectSelector">✕</view>
+      </view>
+      <view class="subjects-grid">
+        <view
+          wx:for="{{subjects}}"
+          wx:key="name"
+          class="subject-option {{selectedSubject === item.name ? 'selected' : ''}}"
+          style="border-color: {{item.color}}"
+          bindtap="selectSubject"
+          data-subject="{{item.name}}"
+        >
+          <view class="subject-color" style="background-color: {{item.color}}"></view>
+          <text class="subject-name">{{item.displayName}}</text>
+          <view class="check-icon" wx:if="{{selectedSubject === item.name}}">✓</view>
+        </view>
+      </view>
     </view>
   </view>
 </view>

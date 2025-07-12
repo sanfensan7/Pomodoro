@@ -18,12 +18,20 @@ Page({
 
     // 热力图数据
     heatmapData: [],
+    heatmapGridData: [],
     heatmapSubtitle: ''
   },
 
   onLoad: function() {
     try {
       console.log('错题本页面加载中...');
+
+      // 启用分享功能
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
+      });
+
       this.mistakeManager = new MistakeManager();
       // 初始化错题本数据（仅在首次使用时）
       this.mistakeManager.initializeIfNeeded();
@@ -42,6 +50,7 @@ Page({
           mastered: 0
         },
         heatmapData: [],
+        heatmapGridData: this.generateHeatmapGrid({}),
         heatmapSubtitle: '暂无数据'
       });
     }
@@ -306,7 +315,10 @@ Page({
   generateHeatmapData: function() {
     try {
       const mistakes = this.data.mistakes;
+
       const dailyStats = {};
+
+
 
       // 统计每日添加和复习的错题数量
       mistakes.forEach(mistake => {
@@ -352,10 +364,26 @@ Page({
       const totalReviewed = Object.values(dailyStats).reduce((sum, day) => sum + day.reviewed, 0);
       const activeDays = Object.keys(dailyStats).length;
 
-      const subtitle = `最近一年共学习 ${activeDays} 天，添加 ${totalAdded} 题，复习 ${totalReviewed} 题`;
+      let subtitle = '';
+      if (activeDays > 0) {
+        subtitle = `最近一年共学习 ${activeDays} 天，添加 ${totalAdded} 题，复习 ${totalReviewed} 题`;
+      } else {
+        subtitle = '暂无学习记录，开始添加错题来生成热力图吧';
+      }
+
+      // 生成网格数据（最近一年，每天一个格子）
+      const gridData = this.generateHeatmapGrid(dailyStats);
+
+
+      console.log('热力图数据生成完成:', {
+        heatmapDataLength: heatmapData.length,
+        gridDataLength: gridData.length,
+        subtitle: subtitle
+      });
 
       this.setData({
         heatmapData,
+        heatmapGridData: gridData,
         heatmapSubtitle: subtitle
       });
 
@@ -364,9 +392,54 @@ Page({
     }
   },
 
+  // 生成热力图网格数据
+  generateHeatmapGrid: function(dailyStats) {
+    const gridData = [];
+    const today = new Date();
+
+    // 计算最大值用于分级，确保至少为1
+    const statsValues = Object.values(dailyStats);
+    const maxCount = statsValues.length > 0 ?
+      Math.max(...statsValues.map(stats => stats.added + stats.reviewed), 1) : 1;
+
+    // 找到今天是星期几，调整起始日期让网格对齐
+    const todayWeekday = today.getDay(); // 0=周日, 1=周一, ..., 6=周六
+    const startDate = new Date(today.getTime() - (52 * 7 + todayWeekday) * 24 * 60 * 60 * 1000);
+
+    // 生成53周 × 7天 = 371天的数据
+    for (let week = 0; week < 53; week++) {
+      for (let day = 0; day < 7; day++) {
+        const currentDate = new Date(startDate.getTime() + (week * 7 + day) * 24 * 60 * 60 * 1000);
+        const dateStr = this.formatDate(currentDate);
+        const stats = dailyStats[dateStr] || { added: 0, reviewed: 0 };
+        const totalCount = stats.added + stats.reviewed;
+
+        // 计算热力等级 (0-4)
+        let level = 0;
+        if (totalCount > 0) {
+          level = Math.min(4, Math.ceil((totalCount / maxCount) * 4));
+        }
+
+        gridData.push({
+          date: dateStr,
+          count: totalCount,
+          level: level,
+          details: {
+            added: stats.added,
+            reviewed: stats.reviewed,
+            total: totalCount
+          }
+        });
+      }
+    }
+
+    console.log('生成热力图网格数据:', gridData.length, '个格子');
+    return gridData;
+  },
+
   // 热力图日期点击事件
   onHeatmapDayTap: function(e) {
-    const { date, count, details } = e.detail;
+    const { date, count, details } = e.currentTarget.dataset;
 
     if (count > 0 && details) {
       let content = `${date}\n\n`;
@@ -419,5 +492,29 @@ Page({
   applyFilters: function() {
     this.setData({ showFilterMenu: false });
     this.filterMistakes();
+  },
+
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    const totalMistakes = this.data.mistakes.length;
+    const needReview = this.data.stats.reviewStats?.needReview || 0;
+
+    return {
+      title: `我的错题本已收录${totalMistakes}道题目，还有${needReview}道待复习`,
+      path: '/pages/mistakes/mistakes',
+      imageUrl: '',
+      desc: '智能错题本，让学习更高效！支持拍照录入、智能复习提醒'
+    };
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    const totalMistakes = this.data.mistakes.length;
+
+    return {
+      title: `我的错题本已收录${totalMistakes}道题目 - 智能学习助手`,
+      query: '',
+      imageUrl: ''
+    };
   }
 });

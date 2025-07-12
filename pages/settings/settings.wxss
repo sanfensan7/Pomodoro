@@ -1,11 +1,14 @@
 .container {
   display: flex;
   flex-direction: column;
-  padding: 0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 0 20rpx;
+  background: var(--background-color);
   min-height: 100vh;
   --theme-color: #ff6b6b;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .container::before {
@@ -25,9 +28,10 @@
   display: flex;
   align-items: center;
   margin-bottom: 40rpx;
-  padding: 48rpx 48rpx 0;
+  padding: 48rpx 12rpx 0;
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .back-icon {
@@ -51,10 +55,11 @@
 
 .settings-group {
   width: 100%;
-  margin-bottom: 60rpx;
-  padding: 0 48rpx;
+  margin-bottom: 40rpx;
+  padding: 0 12rpx;
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .settings-title {
@@ -67,8 +72,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 30rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .settings-item:last-child {
@@ -76,13 +84,23 @@
 }
 
 .item-label {
-  font-size: 32rpx;
-  color: #333;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  flex: 0 0 auto;
+  min-width: 120rpx;
+  max-width: 160rpx;
+  margin-right: 20rpx;
 }
 
 .item-value {
-  font-size: 32rpx;
-  color: #666;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  flex: 1;
+  text-align: right;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .item-arrow {
@@ -91,25 +109,77 @@
 }
 
 .picker {
-  font-size: 32rpx;
-  color: #666;
+  font-size: 26rpx;
+  color: var(--theme-color);
+  text-align: center;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(var(--theme-color-rgb, 255, 107, 107), 0.1);
+  border: 1rpx solid rgba(var(--theme-color-rgb, 255, 107, 107), 0.3);
+  border-radius: 8rpx;
+  padding: 8rpx 16rpx;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.picker::after {
+  content: '▼';
+  position: absolute;
+  right: 8rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16rpx;
+  color: var(--theme-color);
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.picker:active::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.picker:active {
+  background: rgba(var(--theme-color-rgb, 255, 107, 107), 0.25);
+  transform: scale(0.96);
+  border-color: var(--theme-color);
+  box-shadow: 0 2rpx 8rpx rgba(var(--theme-color-rgb, 255, 107, 107), 0.3);
+}
+
+/* 添加微妙的动画效果 */
+.picker {
+  animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(var(--theme-color-rgb, 255, 107, 107), 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 4rpx rgba(var(--theme-color-rgb, 255, 107, 107), 0.05);
+  }
 }
 
 .theme-options {
   display: flex;
   flex-wrap: wrap;
   margin-top: 20rpx;
+  gap: 20rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .theme-option {
-  width: 80rpx;
-  height: 80rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 50%;
-  margin-right: 30rpx;
-  margin-bottom: 20rpx;
   position: relative;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .theme-option.active::after {
@@ -118,30 +188,34 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 40rpx;
-  height: 40rpx;
+  width: 24rpx;
+  height: 24rpx;
   background-color: #fff;
   border-radius: 50%;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
 }
 
 .timer-style-options {
   display: flex;
-  gap: 15rpx;
+  gap: 12rpx;
   margin-top: 20rpx;
-  padding: 0 10rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .timer-style {
   flex: 1;
-  height: 140rpx;
-  border-radius: 12rpx;
-  border: 2rpx solid #ddd;
+  height: 120rpx;
+  border-radius: var(--radius-medium);
+  border: 2rpx solid var(--border-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   transition: all 0.3s ease;
   min-width: 0;
+  background: var(--card-background);
+  box-sizing: border-box;
 }
 
 .timer-style.active {
@@ -226,14 +300,18 @@
 /* 开关样式优化 */
 switch {
   transform: scale(0.9);
+  flex-shrink: 0;
 }
 
 /* 选择器容器样式 */
 .settings-item picker {
-  width: 100%;
+  width: auto;
+  min-width: 100rpx;
+  max-width: 140rpx;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 /* 提醒设置组标题样式 */
@@ -267,4 +345,78 @@ switch {
 .settings-item[bindtap="shareToFriend"]:active {
   background: linear-gradient(135deg, rgba(var(--theme-color-rgb), 0.1), rgba(var(--theme-color-rgb), 0.15));
   transform: translateX(8rpx);
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .container {
+    padding: 0 16rpx;
+  }
+
+  .header {
+    padding: 40rpx 8rpx 0;
+  }
+
+  .settings-group {
+    padding: 0 8rpx;
+    margin-bottom: 32rpx;
+  }
+
+  .settings-item {
+    padding: 20rpx 0;
+  }
+
+  .item-label {
+    font-size: 26rpx;
+    min-width: 100rpx;
+    max-width: 140rpx;
+  }
+
+  .item-value {
+    font-size: 26rpx;
+  }
+
+  .theme-option {
+    width: 50rpx;
+    height: 50rpx;
+  }
+
+  .timer-style {
+    height: 100rpx;
+    min-width: 80rpx;
+  }
+
+  .timer-style-text {
+    font-size: 20rpx;
+  }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 600rpx) {
+  .settings-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16rpx;
+  }
+
+  .item-value,
+  .settings-item picker {
+    max-width: 100%;
+    width: 100%;
+    text-align: left;
+  }
+
+  .theme-options {
+    justify-content: flex-start;
+  }
+
+  .timer-style-options {
+    flex-direction: column;
+    gap: 16rpx;
+  }
+
+  .timer-style {
+    width: 100%;
+    height: 80rpx;
+  }
 }

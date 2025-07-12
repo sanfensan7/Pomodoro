@@ -53,6 +53,12 @@ Page({
     console.log('设置页面加载中...');
 
     try {
+      // 启用分享功能
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
+      });
+
       // 获取已保存的设置
       this.loadSettings();
 
@@ -347,5 +353,23 @@ Page({
     });
   },
 
+  // 分享给微信好友
+  onShareAppMessage: function() {
+    return {
+      title: '我在使用这个番茄钟小程序，专注学习效率很高！',
+      path: '/pages/focus/focus',
+      imageUrl: '',
+      desc: '番茄工作法 + 错题本 + 任务管理，学习效率神器！'
+    };
+  },
+
+  // 分享到朋友圈
+  onShareTimeline: function() {
+    return {
+      title: '番茄钟学习神器 - 专注学习，高效管理',
+      query: '',
+      imageUrl: ''
+    };
+  }
 
 });

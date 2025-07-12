@@ -25,7 +25,7 @@
   </view>
 
   <!-- 热力图区域 -->
-  <view class="heatmap-section card" wx:if="{{heatmapData.length > 0}}">
+  <view class="heatmap-section card">
     <view class="section-header">
       <view class="section-title">
         <text class="title-icon">🔥</text>
@@ -33,9 +33,33 @@
       </view>
       <view class="section-subtitle">{{heatmapSubtitle}}</view>
     </view>
-    <!-- 这里可以集成热力图组件 -->
-    <view class="heatmap-placeholder">
-      <text class="placeholder-text">GitHub风格热力图</text>
+
+    <!-- 热力图网格 -->
+    <view class="heatmap-container">
+      <view class="heatmap-grid">
+        <view
+          wx:for="{{heatmapGridData}}"
+          wx:key="date"
+          class="heatmap-cell level-{{item.level}}"
+          data-date="{{item.date}}"
+          data-count="{{item.count}}"
+          data-details="{{item.details}}"
+          bindtap="onHeatmapDayTap"
+        ></view>
+      </view>
+
+      <!-- 热力图图例 -->
+      <view class="heatmap-legend">
+        <text class="legend-text">少</text>
+        <view class="legend-levels">
+          <view class="legend-cell level-0"></view>
+          <view class="legend-cell level-1"></view>
+          <view class="legend-cell level-2"></view>
+          <view class="legend-cell level-3"></view>
+          <view class="legend-cell level-4"></view>
+        </view>
+        <text class="legend-text">多</text>
+      </view>
     </view>
   </view>
 

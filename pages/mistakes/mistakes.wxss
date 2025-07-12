@@ -3,6 +3,7 @@
   background: var(--background-color);
   min-height: 100vh;
   --theme-color: #ff6b6b;
+  --theme-color-rgb: 255, 107, 107;
   display: flex;
   flex-direction: column;
   gap: 24rpx;
@@ -110,19 +111,110 @@
   color: var(--text-secondary);
 }
 
-.heatmap-placeholder {
-  height: 200rpx;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border-radius: var(--radius-medium);
+/* 热力图容器 */
+.heatmap-container {
+  padding: 16rpx 0;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(53, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 2rpx;
+  margin-bottom: 20rpx;
+  padding: 8rpx;
+  width: 100%;
+  max-width: 680rpx;
+  margin: 0 auto 20rpx auto;
+}
+
+.heatmap-cell {
+  width: 100%;
+  height: 12rpx;
+  border-radius: 2rpx;
+  transition: all 0.2s ease;
+  min-width: 8rpx;
+}
+
+/* 热力图等级颜色 */
+.heatmap-cell.level-0 {
+  background-color: #ebedf0;
+  border: 1rpx solid #f0f0f0;
+}
+
+.heatmap-cell.level-1 {
+  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.3);
+}
+
+.heatmap-cell.level-2 {
+  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.5);
+}
+
+.heatmap-cell.level-3 {
+  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.7);
+}
+
+.heatmap-cell.level-4 {
+  background-color: var(--theme-color);
+}
+
+.heatmap-cell:active {
+  transform: scale(1.2);
+  box-shadow: 0 0 8rpx rgba(var(--theme-color-rgb, 255, 107, 107), 0.5);
+}
+
+/* 热力图图例 */
+.heatmap-legend {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2rpx dashed var(--border-color);
+  gap: 8rpx;
+  margin-top: 16rpx;
 }
 
-.placeholder-text {
+.legend-text {
+  font-size: 22rpx;
   color: var(--text-tertiary);
+}
+
+.legend-levels {
+  display: flex;
+  gap: 3rpx;
+}
+
+.legend-cell {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 2rpx;
+}
+
+/* 空状态 */
+.heatmap-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 20rpx;
+  text-align: center;
+}
+
+.heatmap-empty .empty-icon {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+  opacity: 0.6;
+}
+
+.heatmap-empty .empty-text {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+  font-weight: 500;
+}
+
+.heatmap-empty .empty-hint {
   font-size: 24rpx;
+  color: var(--text-tertiary);
+  line-height: 1.4;
 }
 
 /* 搜索和筛选栏 */

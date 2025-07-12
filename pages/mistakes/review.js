@@ -17,12 +17,17 @@ Page({
       wrong: 0
     },
     isCompleted: false,
-    loading: true
+    loading: true,
+    // 科目选择相关
+    subjects: [],
+    selectedSubject: 'all',
+    showSubjectSelector: false
   },
 
   onLoad: function() {
     this.mistakeManager = new MistakeManager();
     this.loadTheme();
+    this.loadSubjects();
     this.loadReviewMistakes();
   },
 
@@ -31,15 +36,44 @@ Page({
     this.setData({ themeColor });
   },
 
+  loadSubjects: function() {
+    try {
+      const subjects = this.mistakeManager.getSubjects();
+      // 添加"全部科目"选项
+      const subjectsWithAll = [
+        { name: 'all', displayName: '全部科目', color: this.data.themeColor },
+        ...subjects.map(subject => ({
+          ...subject,
+          displayName: subject.name
+        }))
+      ];
+      this.setData({ subjects: subjectsWithAll });
+    } catch (error) {
+      console.error('加载科目失败:', error);
+      this.setData({
+        subjects: [{ name: 'all', displayName: '全部科目', color: this.data.themeColor }]
+      });
+    }
+  },
+
   loadReviewMistakes: function() {
     try {
-      const reviewMistakes = this.mistakeManager.getMistakesForReview();
+      let reviewMistakes = this.mistakeManager.getMistakesForReview();
+
+      // 按选择的科目筛选
+      if (this.data.selectedSubject !== 'all') {
+        reviewMistakes = reviewMistakes.filter(mistake =>
+          mistake.subject === this.data.selectedSubject
+        );
+      }
+
       console.log('获取到的复习错题:', reviewMistakes);
 
       if (reviewMistakes.length === 0) {
+        const subjectText = this.data.selectedSubject === 'all' ? '' : `"${this.data.selectedSubject}"科目`;
         wx.showModal({
           title: '暂无复习内容',
-          content: '当前没有需要复习的错题，请先添加一些错题。',
+          content: `当前${subjectText}没有需要复习的错题，请先添加一些错题或选择其他科目。`,
           showCancel: false,
           success: () => {
             wx.navigateBack();
@@ -314,6 +348,42 @@ Page({
         urls: [this.data.currentMistake.questionImage]
       });
     }
+  },
+
+  // 显示科目选择器
+  showSubjectSelector: function() {
+    vibrate.buttonTap();
+    this.setData({ showSubjectSelector: true });
+  },
+
+  // 隐藏科目选择器
+  hideSubjectSelector: function() {
+    this.setData({ showSubjectSelector: false });
+  },
+
+  // 选择科目
+  selectSubject: function(e) {
+    vibrate.buttonTap();
+    const subject = e.currentTarget.dataset.subject;
+
+    if (subject === this.data.selectedSubject) {
+      this.hideSubjectSelector();
+      return;
+    }
+
+    this.setData({
+      selectedSubject: subject,
+      showSubjectSelector: false,
+      loading: true,
+      currentIndex: 0,
+      showAnswer: false,
+      showExplanation: false,
+      userAnswer: '',
+      isCompleted: false
+    });
+
+    // 重新加载复习内容
+    this.loadReviewMistakes();
   },
 
   // 预览答案图片
