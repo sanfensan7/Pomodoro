@@ -216,7 +216,7 @@
 
     <view class="settings-item">
       <view class="item-label">版本</view>
-      <view class="item-value" style="color: {{themeColor}}">1.2.1</view>
+      <view class="item-value" style="color: {{themeColor}}">1.2.2</view>
     </view>
 
 

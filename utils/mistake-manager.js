@@ -200,6 +200,11 @@ class MistakeManager {
 
   // 初始化示例错题数据
   initSampleMistakes() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    const twoDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+
     const sampleMistakes = [
       {
         id: 'sample_001',
@@ -213,11 +218,13 @@ class MistakeManager {
         difficulty: 2,
         tags: ['导数', '多项式'],
         masteryLevel: 1,
-        reviewTimes: 0,
-        createTime: new Date().toISOString(),
-        lastReviewTime: null,
-        nextReviewTime: new Date().toISOString(),
-        reviewHistory: [],
+        reviewTimes: 1,
+        createTime: today.toISOString(), // 今天创建
+        lastReviewTime: today.toISOString(),
+        nextReviewTime: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        reviewHistory: [
+          { date: today.toISOString(), result: 'correct' }
+        ],
         isStarred: false,
         questionImage: '',
         answerImage: ''
@@ -234,12 +241,13 @@ class MistakeManager {
         difficulty: 3,
         tags: ['词汇', '阅读理解'],
         masteryLevel: 2,
-        reviewTimes: 1,
-        createTime: new Date(Date.now() - 86400000).toISOString(),
-        lastReviewTime: new Date().toISOString(),
-        nextReviewTime: new Date(Date.now() - 3600000).toISOString(), // 1小时前，需要复习
+        reviewTimes: 2,
+        createTime: yesterday.toISOString(), // 昨天创建
+        lastReviewTime: today.toISOString(),
+        nextReviewTime: new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
         reviewHistory: [
-          { date: new Date().toISOString(), result: 'wrong' }
+          { date: yesterday.toISOString(), result: 'wrong' },
+          { date: today.toISOString(), result: 'correct' }
         ],
         isStarred: true,
         questionImage: '',
@@ -258,9 +266,9 @@ class MistakeManager {
         tags: ['马原', '唯物辩证法', '矛盾'],
         masteryLevel: 1,
         reviewTimes: 0,
-        createTime: new Date(Date.now() - 172800000).toISOString(), // 2天前
+        createTime: twoDaysAgo.toISOString(), // 2天前创建
         lastReviewTime: null,
-        nextReviewTime: new Date().toISOString(), // 现在需要复习
+        nextReviewTime: today.toISOString(),
         reviewHistory: [],
         isStarred: false,
         questionImage: '',

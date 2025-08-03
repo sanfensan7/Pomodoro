@@ -111,82 +111,213 @@
   color: var(--text-secondary);
 }
 
-/* 热力图容器 */
-.heatmap-container {
-  padding: 16rpx 0;
+/* 统计图表容器 */
+.stats-container {
+  padding: 30rpx;
+  background: #f8f9fa;
+  border-radius: 20rpx;
+  margin: 30rpx;
 }
 
-.heatmap-grid {
-  display: grid;
-  grid-template-columns: repeat(53, 1fr);
-  grid-template-rows: repeat(7, 1fr);
-  gap: 2rpx;
-  margin-bottom: 20rpx;
-  padding: 8rpx;
-  width: 100%;
-  max-width: 680rpx;
-  margin: 0 auto 20rpx auto;
+/* 月度统计柱状图 */
+.monthly-chart {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
 
-.heatmap-cell {
-  width: 100%;
-  height: 12rpx;
-  border-radius: 2rpx;
-  transition: all 0.2s ease;
-  min-width: 8rpx;
+.chart-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 30rpx;
+  text-align: center;
 }
 
-/* 热力图等级颜色 */
-.heatmap-cell.level-0 {
-  background-color: #ebedf0;
-  border: 1rpx solid #f0f0f0;
-}
-
-.heatmap-cell.level-1 {
-  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.3);
-}
-
-.heatmap-cell.level-2 {
-  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.5);
-}
-
-.heatmap-cell.level-3 {
-  background-color: rgba(var(--theme-color-rgb, 255, 107, 107), 0.7);
-}
-
-.heatmap-cell.level-4 {
-  background-color: var(--theme-color);
-}
-
-.heatmap-cell:active {
-  transform: scale(1.2);
-  box-shadow: 0 0 8rpx rgba(var(--theme-color-rgb, 255, 107, 107), 0.5);
-}
-
-/* 热力图图例 */
-.heatmap-legend {
+.chart-bars {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 200rpx;
+  padding: 0 20rpx;
+}
+
+.chart-bar-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 8rpx;
+}
+
+.chart-bar {
+  width: 40rpx;
+  height: 160rpx;
+  background: #f0f0f0;
+  border-radius: 20rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  border-radius: 20rpx;
+  transition: height 0.8s ease;
+}
+
+.bar-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 10rpx;
+}
+
+.bar-value {
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 5rpx;
+}
+
+/* 学习日历 */
+.learning-calendar {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.calendar-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10rpx;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  margin-top: 16rpx;
+  border-radius: 12rpx;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
-.legend-text {
-  font-size: 22rpx;
-  color: var(--text-tertiary);
+.calendar-day.other-month {
+  opacity: 0.3;
 }
 
-.legend-levels {
+.calendar-day.today {
+  background: var(--theme-color);
+  color: white;
+  font-weight: 600;
+}
+
+.calendar-day.has-data:not(.today) {
+  background: rgba(var(--theme-color-rgb, 255, 107, 107), 0.1);
+  border: 2rpx solid rgba(var(--theme-color-rgb, 255, 107, 107), 0.3);
+}
+
+.day-number {
+  font-size: 26rpx;
+  line-height: 1;
+}
+
+.day-indicator {
+  position: absolute;
+  bottom: 6rpx;
+  right: 6rpx;
+}
+
+.indicator-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+}
+
+/* 学习连击 */
+.streak-container {
   display: flex;
-  gap: 3rpx;
+  gap: 20rpx;
 }
 
-.legend-cell {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 2rpx;
+.streak-card {
+  flex: 1;
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
+
+.streak-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: var(--theme-color);
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+/* 空状态样式 */
+.chart-empty,
+.calendar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 20rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+  font-weight: 500;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.4;
+}
+
+
 
 /* 空状态 */
 .heatmap-empty {

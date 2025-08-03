@@ -17,9 +17,11 @@ Page({
     loading: false,
 
     // 热力图数据
-    heatmapData: [],
-    heatmapGridData: [],
-    heatmapSubtitle: ''
+    monthlyStats: [],
+    calendarDays: [],
+    currentStreak: 0,
+    maxStreak: 0,
+    themeColorRgb: '255, 107, 107'
   },
 
   onLoad: function() {
@@ -33,6 +35,10 @@ Page({
       });
 
       this.mistakeManager = new MistakeManager();
+
+      // 临时重置数据以测试新的示例数据
+      wx.removeStorageSync('mistakes_initialized');
+
       // 初始化错题本数据（仅在首次使用时）
       this.mistakeManager.initializeIfNeeded();
       this.loadTheme();
@@ -49,8 +55,10 @@ Page({
           needReview: 0,
           mastered: 0
         },
-        heatmapData: [],
-        heatmapGridData: this.generateHeatmapGrid({}),
+        monthlyStats: [],
+        calendarDays: [],
+        currentStreak: 0,
+        maxStreak: 0,
         heatmapSubtitle: '暂无数据'
       });
     }
@@ -63,7 +71,26 @@ Page({
 
   loadTheme: function() {
     const themeColor = wx.getStorageSync('themeColor') || '#ff6b6b';
-    this.setData({ themeColor });
+
+    // 将主题色转换为RGB值
+    const themeColorRgb = this.hexToRgb(themeColor);
+
+    this.setData({
+      themeColor,
+      themeColorRgb: themeColorRgb
+    });
+  },
+
+  // 将十六进制颜色转换为RGB字符串
+  hexToRgb: function(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (result) {
+      const r = parseInt(result[1], 16);
+      const g = parseInt(result[2], 16);
+      const b = parseInt(result[3], 16);
+      return `${r}, ${g}, ${b}`;
+    }
+    return '255, 107, 107'; // 默认值
   },
 
   loadData: function() {
@@ -311,84 +338,318 @@ Page({
     wx.stopPullDownRefresh();
   },
 
-  // 生成热力图数据
+  // 生成统计图表数据
   generateHeatmapData: function() {
     try {
       const mistakes = this.data.mistakes;
 
-      const dailyStats = {};
-
-
-
-      // 统计每日添加和复习的错题数量
-      mistakes.forEach(mistake => {
-        // 统计添加日期
-        if (mistake.createTime) {
-          const addDate = this.formatDate(new Date(mistake.createTime));
-          if (!dailyStats[addDate]) {
-            dailyStats[addDate] = { added: 0, reviewed: 0 };
-          }
-          dailyStats[addDate].added++;
-        }
-
-        // 统计复习记录
-        if (mistake.reviewHistory && mistake.reviewHistory.length > 0) {
-          mistake.reviewHistory.forEach(review => {
-            const reviewDate = this.formatDate(new Date(review.date));
-            if (!dailyStats[reviewDate]) {
-              dailyStats[reviewDate] = { added: 0, reviewed: 0 };
-            }
-            dailyStats[reviewDate].reviewed++;
-          });
-        }
-      });
-
-      // 转换为热力图数据格式
-      const heatmapData = Object.keys(dailyStats).map(date => {
-        const stats = dailyStats[date];
-        const totalCount = stats.added + stats.reviewed;
-
-        return {
-          date: date,
-          count: totalCount,
-          details: {
-            added: stats.added,
-            reviewed: stats.reviewed,
-            total: totalCount
-          }
-        };
-      });
-
-      // 计算统计信息
-      const totalAdded = Object.values(dailyStats).reduce((sum, day) => sum + day.added, 0);
-      const totalReviewed = Object.values(dailyStats).reduce((sum, day) => sum + day.reviewed, 0);
-      const activeDays = Object.keys(dailyStats).length;
-
-      let subtitle = '';
-      if (activeDays > 0) {
-        subtitle = `最近一年共学习 ${activeDays} 天，添加 ${totalAdded} 题，复习 ${totalReviewed} 题`;
-      } else {
-        subtitle = '暂无学习记录，开始添加错题来生成热力图吧';
+      console.log('开始生成统计数据，错题数量:', mistakes ? mistakes.length : 0);
+      if (mistakes && mistakes.length > 0) {
+        console.log('错题数据示例:', mistakes[0]);
       }
 
-      // 生成网格数据（最近一年，每天一个格子）
-      const gridData = this.generateHeatmapGrid(dailyStats);
+      // 检查是否有数据
+      const hasData = mistakes && mistakes.length > 0;
 
+      if (hasData) {
+        // 生成月度统计数据
+        const monthlyStats = this.generateMonthlyStats(mistakes);
 
-      console.log('热力图数据生成完成:', {
-        heatmapDataLength: heatmapData.length,
-        gridDataLength: gridData.length,
-        subtitle: subtitle
-      });
+        // 生成日历数据
+        const calendarDays = this.generateCalendarDays(mistakes);
 
-      this.setData({
-        heatmapData,
-        heatmapGridData: gridData,
-        heatmapSubtitle: subtitle
-      });
+        // 计算学习连击
+        const streakData = this.calculateStreak(mistakes);
+
+        console.log('统计数据生成完成:', {
+          mistakesCount: mistakes.length,
+          monthlyStatsCount: monthlyStats.length,
+          calendarDaysCount: calendarDays.length,
+          currentStreak: streakData.current,
+          maxStreak: streakData.max
+        });
+
+        this.setData({
+          monthlyStats: monthlyStats,
+          calendarDays: calendarDays,
+          currentStreak: streakData.current,
+          maxStreak: streakData.max
+        });
+      } else {
+        // 没有数据时设置空状态
+        console.log('没有错题数据，设置空状态');
+        this.setData({
+          monthlyStats: [],
+          calendarDays: [],
+          currentStreak: 0,
+          maxStreak: 0
+        });
+      }
 
     } catch (error) {
-      console.error('生成热力图数据失败:', error);
+      console.error('生成统计数据失败:', error);
+      // 错误时也设置空状态
+      this.setData({
+        monthlyStats: [],
+        calendarDays: [],
+        currentStreak: 0,
+        maxStreak: 0
+      });
+    }
+  },
+
+  // 生成月度统计数据
+  generateMonthlyStats: function(mistakes) {
+    const monthlyData = {};
+    const today = new Date();
+
+    // 初始化最近6个月的数据
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyData[key] = {
+        added: 0,
+        reviewed: 0,
+        total: 0,
+        label: `${date.getMonth() + 1}月`,
+        month: date.getMonth() + 1
+      };
+    }
+
+    // 统计错题数据
+    mistakes.forEach(mistake => {
+      // 统计添加的错题
+      if (mistake.createTime) {
+        const date = new Date(mistake.createTime);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        if (monthlyData[key]) {
+          monthlyData[key].added++;
+          monthlyData[key].total++;
+        }
+      }
+
+      // 统计复习记录
+      if (mistake.reviewHistory && mistake.reviewHistory.length > 0) {
+        mistake.reviewHistory.forEach(review => {
+          const date = new Date(review.date);
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          if (monthlyData[key]) {
+            monthlyData[key].reviewed++;
+            monthlyData[key].total++;
+          }
+        });
+      }
+    });
+
+    // 转换为数组并计算百分比
+    const monthlyArray = Object.values(monthlyData);
+    const maxTotal = Math.max(...monthlyArray.map(item => item.total), 1);
+
+    return monthlyArray.map(item => ({
+      ...item,
+      percentage: (item.total / maxTotal) * 100
+    }));
+  },
+
+  // 生成日历数据
+  generateCalendarDays: function(mistakes) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    // 获取本月第一天和最后一天
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+
+    // 获取本月第一天是星期几
+    const firstDayWeek = firstDay.getDay();
+
+    // 获取上个月的最后几天
+    const prevMonth = new Date(year, month, 0);
+    const prevMonthDays = prevMonth.getDate();
+
+    const calendarDays = [];
+    const dailyStats = {};
+
+    // 统计每日的学习数据
+    mistakes.forEach(mistake => {
+      if (mistake.createTime) {
+        const date = this.formatDate(new Date(mistake.createTime));
+        dailyStats[date] = true;
+      }
+      if (mistake.reviewHistory && mistake.reviewHistory.length > 0) {
+        mistake.reviewHistory.forEach(review => {
+          const date = this.formatDate(new Date(review.date));
+          dailyStats[date] = true;
+        });
+      }
+    });
+
+    // 添加上个月的最后几天
+    for (let i = firstDayWeek - 1; i >= 0; i--) {
+      const day = prevMonthDays - i;
+      const date = new Date(year, month - 1, day);
+      calendarDays.push({
+        day: day,
+        date: this.formatDate(date),
+        isCurrentMonth: false,
+        isToday: false,
+        hasData: false
+      });
+    }
+
+    // 添加本月的所有天
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, month, day);
+      const dateStr = this.formatDate(date);
+      const isToday = dateStr === this.formatDate(today);
+
+      calendarDays.push({
+        day: day,
+        date: dateStr,
+        isCurrentMonth: true,
+        isToday: isToday,
+        hasData: !!dailyStats[dateStr]
+      });
+    }
+
+    // 添加下个月的前几天，补齐6行
+    const remainingDays = 42 - calendarDays.length;
+    for (let day = 1; day <= remainingDays; day++) {
+      const date = new Date(year, month + 1, day);
+      calendarDays.push({
+        day: day,
+        date: this.formatDate(date),
+        isCurrentMonth: false,
+        isToday: false,
+        hasData: false
+      });
+    }
+
+    return calendarDays;
+  },
+
+  // 计算学习连击
+  calculateStreak: function(mistakes) {
+    if (!mistakes || mistakes.length === 0) {
+      return { current: 0, max: 0 };
+    }
+
+    const dailyStats = {};
+
+    // 统计每日是否有学习活动
+    mistakes.forEach(mistake => {
+      if (mistake.createTime) {
+        const date = this.formatDate(new Date(mistake.createTime));
+        dailyStats[date] = true;
+      }
+      if (mistake.reviewHistory && mistake.reviewHistory.length > 0) {
+        mistake.reviewHistory.forEach(review => {
+          const date = this.formatDate(new Date(review.date));
+          dailyStats[date] = true;
+        });
+      }
+    });
+
+    // 获取所有有学习活动的日期并排序
+    const studyDates = Object.keys(dailyStats).sort();
+
+    if (studyDates.length === 0) {
+      return { current: 0, max: 0 };
+    }
+
+    const today = this.formatDate(new Date());
+    let currentStreak = 0;
+    let maxStreak = 0;
+
+    // 计算当前连击：从今天开始往前连续的天数
+    let checkDate = new Date();
+    console.log('开始计算连击，今天日期:', this.formatDate(checkDate));
+    console.log('有学习活动的日期:', Object.keys(dailyStats));
+
+    while (true) {
+      const dateStr = this.formatDate(checkDate);
+      console.log('检查日期:', dateStr, '有活动:', !!dailyStats[dateStr]);
+      if (dailyStats[dateStr]) {
+        currentStreak++;
+        // 往前一天
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    console.log('当前连击天数:', currentStreak);
+
+    // 计算最大连击：遍历所有学习日期
+    let tempStreak = 1;
+    maxStreak = 1;
+
+    for (let i = 1; i < studyDates.length; i++) {
+      const prevDate = new Date(studyDates[i - 1]);
+      const currDate = new Date(studyDates[i]);
+
+      // 计算两个日期之间的天数差
+      const dayDiff = Math.floor((currDate - prevDate) / (24 * 60 * 60 * 1000));
+
+      if (dayDiff === 1) {
+        // 连续的日期
+        tempStreak++;
+        maxStreak = Math.max(maxStreak, tempStreak);
+      } else {
+        // 不连续，重新开始计算
+        tempStreak = 1;
+      }
+    }
+
+    return {
+      current: currentStreak,
+      max: maxStreak
+    };
+  },
+
+  // 日历日期点击事件
+  onCalendarDayTap: function(e) {
+    const date = e.currentTarget.dataset.date;
+    const mistakes = this.data.mistakes;
+
+    // 筛选出该日期的错题
+    const dayMistakes = mistakes.filter(mistake => {
+      // 检查是否是添加日期
+      if (mistake.createTime) {
+        const createDate = this.formatDate(new Date(mistake.createTime));
+        if (createDate === date) return true;
+      }
+
+      // 检查是否是复习日期
+      if (mistake.reviewHistory && mistake.reviewHistory.length > 0) {
+        return mistake.reviewHistory.some(review => {
+          const reviewDate = this.formatDate(new Date(review.date));
+          return reviewDate === date;
+        });
+      }
+
+      return false;
+    });
+
+    if (dayMistakes.length > 0) {
+      wx.showModal({
+        title: `${date} 学习记录`,
+        content: `这一天共学习了 ${dayMistakes.length} 道题目`,
+        showCancel: false,
+        confirmText: '查看详情',
+        success: (res) => {
+          if (res.confirm) {
+            // 可以跳转到详情页面或显示更多信息
+            console.log('查看详情:', dayMistakes);
+          }
+        }
+      });
+    } else {
+      wx.showToast({
+        title: '这一天没有学习记录',
+        icon: 'none'
+      });
     }
   },
 
@@ -402,14 +663,40 @@ Page({
     const maxCount = statsValues.length > 0 ?
       Math.max(...statsValues.map(stats => stats.added + stats.reviewed), 1) : 1;
 
-    // 找到今天是星期几，调整起始日期让网格对齐
-    const todayWeekday = today.getDay(); // 0=周日, 1=周一, ..., 6=周六
-    const startDate = new Date(today.getTime() - (52 * 7 + todayWeekday) * 24 * 60 * 60 * 1000);
+    // 计算一年前的日期（365天前）
+    const oneYearAgo = new Date(today.getTime() - 364 * 24 * 60 * 60 * 1000);
 
-    // 生成53周 × 7天 = 371天的数据
-    for (let week = 0; week < 53; week++) {
+    // 找到一年前那一周的周日作为起始日期
+    const startWeekday = oneYearAgo.getDay(); // 0=周日, 1=周一, ..., 6=周六
+    const startDate = new Date(oneYearAgo.getTime() - startWeekday * 24 * 60 * 60 * 1000);
+
+    // 计算需要多少周来覆盖一年的时间
+    const endDate = new Date(today.getTime() + (6 - today.getDay()) * 24 * 60 * 60 * 1000); // 本周周六
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+    const totalWeeks = Math.ceil(totalDays / 7);
+
+    // 生成热力图数据，按周排列
+    for (let week = 0; week < totalWeeks; week++) {
       for (let day = 0; day < 7; day++) {
         const currentDate = new Date(startDate.getTime() + (week * 7 + day) * 24 * 60 * 60 * 1000);
+
+        // 只显示一年内的数据
+        if (currentDate > today) {
+          // 未来的日期显示为空格子
+          gridData.push({
+            date: this.formatDate(currentDate),
+            count: 0,
+            level: 0,
+            isFuture: true,
+            details: {
+              added: 0,
+              reviewed: 0,
+              total: 0
+            }
+          });
+          continue;
+        }
+
         const dateStr = this.formatDate(currentDate);
         const stats = dailyStats[dateStr] || { added: 0, reviewed: 0 };
         const totalCount = stats.added + stats.reviewed;
@@ -420,10 +707,15 @@ Page({
           level = Math.min(4, Math.ceil((totalCount / maxCount) * 4));
         }
 
+        // 检查是否是今天
+        const isToday = dateStr === this.formatDate(today);
+
         gridData.push({
           date: dateStr,
           count: totalCount,
           level: level,
+          isToday: isToday,
+          isFuture: false,
           details: {
             added: stats.added,
             reviewed: stats.reviewed,
@@ -433,8 +725,49 @@ Page({
       }
     }
 
-    console.log('生成热力图网格数据:', gridData.length, '个格子');
-    return gridData;
+
+
+    // 生成月份标签
+    const monthLabels = this.generateMonthLabels(startDate, totalWeeks);
+
+    return {
+      gridData: gridData,
+      monthLabels: monthLabels,
+      totalWeeks: totalWeeks
+    };
+  },
+
+  // 生成月份标签
+  generateMonthLabels: function(startDate, totalWeeks) {
+    const monthLabels = [];
+    const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月',
+                       '7月', '8月', '9月', '10月', '11月', '12月'];
+
+    let currentMonth = -1;
+
+    for (let week = 0; week < totalWeeks; week++) {
+      const weekStartDate = new Date(startDate.getTime() + week * 7 * 24 * 60 * 60 * 1000);
+      const month = weekStartDate.getMonth();
+
+      if (month !== currentMonth) {
+        // 新的月份开始
+        monthLabels.push({
+          week: week,
+          month: month,
+          label: monthNames[month]
+        });
+        currentMonth = month;
+      } else {
+        // 同一个月份，添加空标签
+        monthLabels.push({
+          week: week,
+          month: month,
+          label: ''
+        });
+      }
+    }
+
+    return monthLabels;
   },
 
   // 热力图日期点击事件

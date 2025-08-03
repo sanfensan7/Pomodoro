@@ -34,31 +34,76 @@
       <view class="section-subtitle">{{heatmapSubtitle}}</view>
     </view>
 
-    <!-- 热力图网格 -->
-    <view class="heatmap-container">
-      <view class="heatmap-grid">
-        <view
-          wx:for="{{heatmapGridData}}"
-          wx:key="date"
-          class="heatmap-cell level-{{item.level}}"
-          data-date="{{item.date}}"
-          data-count="{{item.count}}"
-          data-details="{{item.details}}"
-          bindtap="onHeatmapDayTap"
-        ></view>
+    <!-- 学习统计图表 -->
+    <view class="stats-container">
+      <!-- 月度统计柱状图 -->
+      <view class="monthly-chart">
+        <view class="chart-title">📊 近6个月学习统计</view>
+        <view wx:if="{{monthlyStats.length > 0}}" class="chart-bars">
+          <view
+            wx:for="{{monthlyStats}}"
+            wx:key="month"
+            class="chart-bar-container"
+          >
+            <view class="chart-bar">
+              <view
+                class="bar-fill"
+                style="height: {{item.percentage}}%; background: linear-gradient(to top, {{themeColor}}, rgba({{themeColorRgb}}, 0.6))"
+              ></view>
+            </view>
+            <view class="bar-label">{{item.label}}</view>
+            <view class="bar-value">{{item.total}}</view>
+          </view>
+        </view>
+        <!-- 空状态 -->
+        <view wx:else class="chart-empty">
+          <view class="empty-icon">📈</view>
+          <view class="empty-text">暂无统计数据</view>
+          <view class="empty-desc">添加错题后即可查看学习统计</view>
+        </view>
       </view>
 
-      <!-- 热力图图例 -->
-      <view class="heatmap-legend">
-        <text class="legend-text">少</text>
-        <view class="legend-levels">
-          <view class="legend-cell level-0"></view>
-          <view class="legend-cell level-1"></view>
-          <view class="legend-cell level-2"></view>
-          <view class="legend-cell level-3"></view>
-          <view class="legend-cell level-4"></view>
+      <!-- 学习日历 -->
+      <view class="learning-calendar">
+        <view class="calendar-title">📅 本月学习日历</view>
+        <view wx:if="{{calendarDays.length > 0}}" class="calendar-grid">
+          <view
+            wx:for="{{calendarDays}}"
+            wx:key="date"
+            class="calendar-day {{item.hasData ? 'has-data' : ''}} {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}"
+            data-date="{{item.date}}"
+            bindtap="onCalendarDayTap"
+          >
+            <view class="day-number">{{item.day}}</view>
+            <view wx:if="{{item.hasData}}" class="day-indicator">
+              <view class="indicator-dot" style="background-color: {{themeColor}}"></view>
+            </view>
+          </view>
         </view>
-        <text class="legend-text">多</text>
+        <!-- 空状态 -->
+        <view wx:else class="calendar-empty">
+          <view class="empty-icon">📚</view>
+          <view class="empty-text">还没有学习记录</view>
+          <view class="empty-desc">开始添加错题来记录学习进度吧</view>
+        </view>
+      </view>
+
+      <!-- 学习连击 -->
+      <view class="streak-container">
+        <view class="streak-card">
+          <view class="streak-icon">🔥</view>
+          <view class="streak-info">
+            <view class="streak-number">{{currentStreak}}</view>
+            <view class="streak-label">连续学习天数</view>
+          </view>
+        </view>
+        <view class="streak-card">
+          <view class="streak-icon">⭐</view>
+          <view class="streak-info">
+            <view class="streak-number">{{maxStreak}}</view>
+            <view class="streak-label">最长连击记录</view>
+          </view>
+        </view>
       </view>
     </view>
   </view>
