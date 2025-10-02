@@ -37,28 +37,6 @@
     </view>
   </view>
   
-  <!-- 目标完成率统计 -->
-  <view class="goal-completion-stats card" wx:if="{{goalStats && period !== 'ranking'}}">
-    <view class="goal-stats-title">🎯 目标完成率</view>
-    <view class="goal-stats-grid">
-      <view class="goal-stat-item">
-        <view class="goal-stat-label">最近7天</view>
-        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.daily.last7Days.rate}}%</view>
-        <view class="goal-stat-desc">{{goalStats.daily.last7Days.achieved}}/{{goalStats.daily.last7Days.total}}</view>
-      </view>
-      <view class="goal-stat-item">
-        <view class="goal-stat-label">最近30天</view>
-        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.daily.last30Days.rate}}%</view>
-        <view class="goal-stat-desc">{{goalStats.daily.last30Days.achieved}}/{{goalStats.daily.last30Days.total}}</view>
-      </view>
-      <view class="goal-stat-item">
-        <view class="goal-stat-label">连续达成</view>
-        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.currentStreak}}</view>
-        <view class="goal-stat-desc">天</view>
-      </view>
-    </view>
-  </view>
-
   <view class="stats-summary" wx:if="{{period !== 'ranking'}}">
     <view class="summary-item">
       <view class="summary-label">

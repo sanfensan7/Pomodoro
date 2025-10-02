@@ -262,8 +262,6 @@ Page({
           statsData = this.getDayStats();
       }
 
-      // 加载目标完成率统计
-      this.loadGoalStats();
 
       // 确保数据完整性
       if (!statsData || !statsData.labels || !statsData.values || !statsData.summary) {
@@ -493,19 +491,5 @@ Page({
     return shareHelper.getShareTimelineConfig('total');
   },
 
-  /**
-   * 加载目标完成率统计
-   */
-  loadGoalStats: function() {
-    try {
-      const goalStats = goalManager.getCompletionStats();
-      this.setData({
-        goalStats: goalStats
-      });
-      logger.log('目标完成率统计已加载', goalStats);
-    } catch (error) {
-      logger.error('加载目标完成率统计失败', error);
-    }
-  }
 
 });
