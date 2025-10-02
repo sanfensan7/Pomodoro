@@ -240,7 +240,7 @@
 
     <view class="settings-item">
       <view class="item-label">版本</view>
-      <view class="item-value" style="color: {{themeColor}}">1.2.3</view>
+      <view class="item-value" style="color: {{themeColor}}">1.2.4</view>
     </view>
 
     <button class="feedback-btn" open-type="feedback">意见反馈</button>
