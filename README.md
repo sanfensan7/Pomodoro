@@ -236,7 +236,7 @@ git clone [repository-url]
 
 ## 📞 联系我们
 
-- � 邮箱：[your-email@example.com]
+- � 邮箱：[1838741419@qq.com]
 - 💬 微信群：扫描下方二维码加入讨论群
 
 ![小程序二维码](https://picgo-photo.oss-cn-beijing.aliyuncs.com/%E6%97%B6%E9%97%B4%E9%A2%86%E8%88%AA%E5%91%98.jpg)
