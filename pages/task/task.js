@@ -22,7 +22,6 @@ Page({
   },
 
   onLoad: function() {
-    console.log('任务页面加载中...');
 
     try {
       // 启用分享功能
@@ -40,7 +39,6 @@ Page({
 
       // 加载任务列表
       this.loadTasks();
-      console.log('任务页面加载完成');
     } catch (error) {
       console.error('任务页面加载失败:', error);
     }
@@ -82,7 +80,6 @@ Page({
         completedCount,
         completionRate
       });
-      console.log('任务加载完成，共', tasks.length, '个任务');
     } catch (error) {
       console.error('加载任务失败:', error);
       this.setData({ tasks: [] });

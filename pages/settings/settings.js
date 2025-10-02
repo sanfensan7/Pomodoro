@@ -50,7 +50,6 @@ Page({
   },
 
   onLoad: function() {
-    console.log('设置页面加载中...');
 
     try {
       // 启用分享功能
@@ -69,8 +68,6 @@ Page({
           themeColorRGB: hexToRgb(app.globalData.themeColor)
         });
       }
-
-      console.log('设置页面加载完成');
     } catch (error) {
       console.error('设置页面加载失败:', error);
     }
@@ -117,8 +114,6 @@ Page({
       repeatIndex: repeatIndex,
       reminderIntervalIndex: reminderIntervalIndex
     });
-
-    console.log('设置加载完成');
     } catch (error) {
       console.error('加载设置失败:', error);
       // 设置默认值

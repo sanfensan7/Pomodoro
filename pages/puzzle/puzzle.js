@@ -342,7 +342,7 @@ Page({
         type: 'light'
       });
     } catch (e) {
-      console.log('振动反馈不可用');
+      // 振动反馈不可用
     }
   },
 
@@ -358,7 +358,7 @@ Page({
         });
       }, 200);
     } catch (e) {
-      console.log('振动反馈不可用');
+      // 振动反馈不可用
     }
   },
 
@@ -377,8 +377,6 @@ Page({
       try {
         // 计算最优下一步
         const hint = this.calculateBestMove();
-
-        console.log('提示计算结果:', hint);
 
         if (hint) {
           this.setData({

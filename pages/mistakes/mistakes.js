@@ -564,12 +564,8 @@ Page({
 
     // 计算当前连击：从今天开始往前连续的天数
     let checkDate = new Date();
-    console.log('开始计算连击，今天日期:', this.formatDate(checkDate));
-    console.log('有学习活动的日期:', Object.keys(dailyStats));
-
     while (true) {
       const dateStr = this.formatDate(checkDate);
-      console.log('检查日期:', dateStr, '有活动:', !!dailyStats[dateStr]);
       if (dailyStats[dateStr]) {
         currentStreak++;
         // 往前一天
@@ -579,33 +575,7 @@ Page({
       }
     }
 
-    console.log('当前连击天数:', currentStreak);
-
-    // 计算最大连击：遍历所有学习日期
-    let tempStreak = 1;
-    maxStreak = 1;
-
-    for (let i = 1; i < studyDates.length; i++) {
-      const prevDate = new Date(studyDates[i - 1]);
-      const currDate = new Date(studyDates[i]);
-
-      // 计算两个日期之间的天数差
-      const dayDiff = Math.floor((currDate - prevDate) / (24 * 60 * 60 * 1000));
-
-      if (dayDiff === 1) {
-        // 连续的日期
-        tempStreak++;
-        maxStreak = Math.max(maxStreak, tempStreak);
-      } else {
-        // 不连续，重新开始计算
-        tempStreak = 1;
-      }
-    }
-
-    return {
-      current: currentStreak,
-      max: maxStreak
-    };
+    return currentStreak;
   },
 
   // 日历日期点击事件

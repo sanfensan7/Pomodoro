@@ -29,28 +29,38 @@
     "list": [
       {
         "pagePath": "pages/focus/focus",
-        "text": "专注"
+        "text": "专注",
+        "iconPath": "images/tabbar-png/focus.png",
+        "selectedIconPath": "images/tabbar-png/focus-active.png"
       },
       {
         "pagePath": "pages/task/task",
-        "text": "任务"
+        "text": "任务",
+        "iconPath": "images/tabbar-png/task.png",
+        "selectedIconPath": "images/tabbar-png/task-active.png"
       },
       {
         "pagePath": "pages/mistakes/mistakes",
-        "text": "错题本"
+        "text": "错题本",
+        "iconPath": "images/tabbar-png/mistakes.png",
+        "selectedIconPath": "images/tabbar-png/mistakes-active.png"
       },
       {
         "pagePath": "pages/stats/stats",
-        "text": "统计"
+        "text": "统计",
+        "iconPath": "images/tabbar-png/stats.png",
+        "selectedIconPath": "images/tabbar-png/stats-active.png"
       },
       {
         "pagePath": "pages/settings/settings",
-        "text": "设置"
+        "text": "设置",
+        "iconPath": "images/tabbar-png/settings.png",
+        "selectedIconPath": "images/tabbar-png/settings-active.png"
       }
     ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
-} 
+}
  

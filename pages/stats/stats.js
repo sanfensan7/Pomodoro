@@ -19,7 +19,6 @@ Page({
   },
 
   onLoad: function() {
-    console.log('统计页面加载中...');
 
     try {
       // 启用分享功能
@@ -37,7 +36,6 @@ Page({
 
       // 加载统计数据
       this.fetchStatsData();
-      console.log('统计页面加载完成');
     } catch (error) {
       console.error('统计页面加载失败:', error);
     }

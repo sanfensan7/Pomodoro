@@ -14,26 +14,9 @@ App({
   vibrate: vibrate,
   
   onLaunch: function() {
-    // 注释掉图标生成代码，使用预先生成的图标
-    // try {
-    //   console.log('开始生成内置图标...');
-    //   const createDefaultIcons = require('./utils/createDefaultIcons');
-    //   createDefaultIcons.createIcons();
-    // } catch (e) {
-    //   console.error('生成内置图标失败:', e);
-    // }
-
-    // // 尝试生成自定义图标
-    // try {
-    //   console.log('尝试生成自定义图标...');
-    //   const svgToPng = require('./utils/svgToPng');
-    //   svgToPng.convertSvgToPng();
-    // } catch (e) {
-    //   console.error('生成自定义图标失败:', e);
-    // }
+    // 图标生成代码已移除，使用预先生成的图标
     
     // 检查图标是否存在，并提示用户
-    console.log('检查图标资源...');
     
     // 获取已保存的设置
     this.loadSettings();

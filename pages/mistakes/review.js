@@ -67,7 +67,6 @@ Page({
         );
       }
 
-      console.log('获取到的复习错题:', reviewMistakes);
 
       if (reviewMistakes.length === 0) {
         const subjectText = this.data.selectedSubject === 'all' ? '' : `"${this.data.selectedSubject}"科目`;

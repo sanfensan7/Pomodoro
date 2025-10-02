@@ -2,6 +2,8 @@ var app = getApp();
 var achievementTracker = require('../../utils/achievement-tracker');
 var shareHelper = require('../../utils/share-helper');
 var vibrate = require('../../utils/vibrate');
+const Task = require('../../utils/task.js');
+const Timer = require('../../utils/timer.js');
 
 Page({
   data: {
@@ -32,14 +34,15 @@ Page({
       });
     }
 
+    // 初始化 Timer 管理器
+    this.timerManager = new Timer(this);
+    this.taskManager = new Task(this);
+
     // 加载保存的设置
     this.loadSettings();
 
     // 初始化时钟
-    this.initTimer();
-
-    // 初始化背景音效
-    this.initBackgroundSound();
+    this.timerManager.initTimer();
   },
   
   onShow: function() {
@@ -75,7 +78,7 @@ Page({
 
     // 如果当前不是计时中状态，重新初始化计时器以应用新设置
     if (!this.data.isRunning) {
-      this.initTimer();
+      this.timerManager.initTimer();
     } else {
       // 如果正在计时，也要更新进度显示以应用新样式
       setTimeout(() => {
@@ -93,9 +96,6 @@ Page({
       if (keepScreenOn !== false) { // 默认启用
         wx.setKeepScreenOn({
           keepScreenOn: true,
-          success: function() {
-            console.log('页面显示，屏幕常亮已恢复');
-          },
           fail: function(error) {
             console.error('设置屏幕常亮失败:', error);
           }
@@ -106,32 +106,23 @@ Page({
   
   onUnload: function() {
     // 清除定时器
-    if (this.timer) {
-      clearInterval(this.timer);
+    if (this.timerManager.timer) {
+      clearInterval(this.timerManager.timer);
     }
 
     // 取消屏幕常亮
     wx.setKeepScreenOn({
       keepScreenOn: false,
-      success: function() {
-        console.log('页面卸载，屏幕常亮已取消');
-      },
       fail: function(error) {
         console.error('取消屏幕常亮失败:', error);
       }
     });
-
-    // 停止背景音效
-    this.stopBackgroundSound();
   },
 
   onHide: function() {
     // 页面隐藏时取消屏幕常亮，避免在后台时仍保持常亮
     wx.setKeepScreenOn({
       keepScreenOn: false,
-      success: function() {
-        console.log('页面隐藏，屏幕常亮已取消');
-      },
       fail: function(error) {
         console.error('取消屏幕常亮失败:', error);
       }
@@ -143,6 +134,63 @@ Page({
   onReady: function() {
     // 绘制初始进度环
     this.drawProgressRing();
+  },
+  
+  drawProgressRing: function() {
+    const ctx = wx.createCanvasContext('progressRing');
+    const width = 300;
+    const height = 300;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = 120;
+    const lineWidth = 15;
+    
+    // 计算进度
+    const progress = 1 - (this.data.timeLeft / (this.data.totalTime || this.data.timeLeft));
+    
+    // 绘制背景圆环
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.setStrokeStyle('#f0f0f0');
+    ctx.setLineWidth(lineWidth);
+    ctx.stroke();
+    
+    // 绘制进度圆环
+    if (progress > 0) {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + progress * 2 * Math.PI);
+      ctx.setStrokeStyle(this.data.themeColor);
+      ctx.setLineWidth(lineWidth);
+      ctx.stroke();
+    }
+    
+    ctx.draw();
+  },
+  
+  drawProgressLine: function() {
+    const ctx = wx.createCanvasContext('progressLine');
+    const width = 300;
+    const height = 10;
+    
+    // 计算进度
+    const progress = 1 - (this.data.timeLeft / (this.data.totalTime || this.data.timeLeft));
+    const progressWidth = progress * width;
+    
+    // 绘制背景
+    ctx.beginPath();
+    ctx.rect(0, 0, width, height);
+    ctx.setFillStyle('#f0f0f0');
+    ctx.fill();
+    
+    // 绘制进度
+    if (progress > 0) {
+      ctx.beginPath();
+      ctx.rect(0, 0, progressWidth, height);
+      ctx.setFillStyle(this.data.themeColor);
+      ctx.fill();
+    }
+    
+    ctx.draw();
   },
   
   loadSettings: function() {
@@ -162,7 +210,8 @@ Page({
       timeLeft: focusDuration * 60
     });
 
-    this.updateTimerDisplay();
+    // 使用 timerManager 更新计时器显示
+    this.timerManager.updateTimerDisplay();
 
     // 如果计时器样式发生变化，重新绘制进度显示
     if (oldTimerStyle !== timerStyle) {
@@ -176,315 +225,8 @@ Page({
     }
   },
   
-  initTimer: function() {
-    // 根据当前模式初始化计时器
-    let duration;
-    switch (this.data.currentMode) {
-      case 'focus':
-        duration = this.data.focusDuration;
-        this.setData({ timerLabel: this.data.currentTask ? this.data.currentTask.title : '专注时间' });
-        break;
-      case 'shortBreak':
-        duration = this.data.shortBreakDuration;
-        this.setData({ timerLabel: '短休息' });
-        break;
-      case 'longBreak':
-        duration = this.data.longBreakDuration;
-        this.setData({ timerLabel: '长休息' });
-        break;
-    }
-    
-    this.setData({
-      timeLeft: duration * 60,
-      totalTime: duration * 60,
-      isRunning: false
-    });
-    
-    this.updateTimerDisplay();
-    
-    // 根据计时器样式选择适当的显示方法
-    if (this.data.timerStyle === 'circle') {
-      this.drawProgressRing();
-    } else if (this.data.timerStyle === 'line') {
-      this.drawProgressLine();
-    }
-    // 极简样式不需要绘制进度
-  },
-  
   toggleTimer: function() {
-    // 播放按钮点击音效
-    this.playButtonSound();
-
-    // 震动反馈
-    vibrate.buttonTap();
-
-    if (this.data.isRunning) {
-      this.pauseTimer();
-    } else {
-      this.startTimer();
-    }
-  },
-  
-  startTimer: function() {
-    this.setData({ isRunning: true });
-
-    // 根据设置决定是否保持屏幕常亮
-    var keepScreenOn = wx.getStorageSync('keepScreenOn');
-    if (keepScreenOn !== false) { // 默认启用
-      wx.setKeepScreenOn({
-        keepScreenOn: true,
-        success: function() {
-          console.log('屏幕保持常亮设置成功');
-        },
-        fail: function(error) {
-          console.error('屏幕保持常亮设置失败:', error);
-        }
-      });
-    }
-
-    // 开始播放背景音效
-    this.startBackgroundSound();
-
-    var self = this;
-    this.timer = setInterval(function() {
-      if (self.data.timeLeft > 0) {
-        self.setData({
-          timeLeft: self.data.timeLeft - 1
-        });
-        self.updateTimerDisplay();
-
-        // 根据计时器样式更新进度显示
-        if (self.data.timerStyle === 'circle') {
-          self.drawProgressRing();
-        } else if (self.data.timerStyle === 'line') {
-          self.drawProgressLine();
-        }
-      } else {
-        clearInterval(self.timer);
-        self.setData({ isRunning: false });
-
-        // 取消屏幕常亮
-        wx.setKeepScreenOn({
-          keepScreenOn: false,
-          success: function() {
-            console.log('计时结束，屏幕常亮已取消');
-          },
-          fail: function(error) {
-            console.error('取消屏幕常亮失败:', error);
-          }
-        });
-
-        // 停止背景音效
-        self.stopBackgroundSound();
-
-        // 计时结束，执行完成提醒
-        self.executeCompletionReminder();
-
-        // 更新经验值和成就
-        self.updateExperience();
-        self.updateAchievements();
-
-        // 计时结束，显示完成页面
-        if (self.data.currentMode === 'focus') {
-          // 如果有关联任务，更新任务进度
-          if (self.data.currentTask) {
-            self.updateTaskProgress();
-          }
-
-          // 检查是否设置了自动开始休息
-          const autoStartBreak = wx.getStorageSync('autoStartBreak');
-          if (autoStartBreak) {
-            // 判断应该开始短休息还是长休息
-            const longBreakInterval = wx.getStorageSync('longBreakInterval') || 4;
-            const todayStats = wx.getStorageSync('todayStats') || { completed: 0 };
-            
-            if (todayStats.completed > 0 && todayStats.completed % longBreakInterval === 0) {
-              self.switchMode({ currentTarget: { dataset: { mode: 'longBreak' } } });
-              self.startTimer(); // 自动开始计时
-
-              wx.showToast({
-                title: '已自动开始长休息',
-                icon: 'success'
-              });
-            } else {
-              self.switchMode({ currentTarget: { dataset: { mode: 'shortBreak' } } });
-              self.startTimer(); // 自动开始计时
-
-              wx.showToast({
-                title: '已自动开始短休息',
-                icon: 'success'
-              });
-            }
-          } else {
-            // 如果没有设置自动开始休息，则显示完成页面
-            wx.navigateTo({
-              url: '/pages/complete/complete'
-            });
-          }
-          
-          // 更新统计信息
-          self.updateCompletedCount();
-        } else {
-          // 如果是休息结束
-          wx.showToast({
-            title: '休息结束',
-            icon: 'success'
-          });
-
-          // 检查是否设置了休息后自动开始专注
-          const autoStartFocus = wx.getStorageSync('autoStartFocus');
-          if (autoStartFocus) {
-            self.switchMode({ currentTarget: { dataset: { mode: 'focus' } } });
-            self.startTimer(); // 自动开始计时
-
-            wx.showToast({
-              title: '已自动开始专注',
-              icon: 'success'
-            });
-          }
-        }
-      }
-    }, 1000);
-  },
-  
-  pauseTimer: function() {
-    clearInterval(this.timer);
-    this.setData({ isRunning: false });
-
-    // 取消屏幕常亮
-    wx.setKeepScreenOn({
-      keepScreenOn: false,
-      success: function() {
-        console.log('屏幕常亮已取消');
-      },
-      fail: function(error) {
-        console.error('取消屏幕常亮失败:', error);
-      }
-    });
-
-    // 暂停背景音效
-    this.pauseBackgroundSound();
-  },
-  
-  resetTimer: function() {
-    clearInterval(this.timer);
-
-    // 取消屏幕常亮
-    wx.setKeepScreenOn({
-      keepScreenOn: false,
-      success: function() {
-        console.log('重置计时器，屏幕常亮已取消');
-      },
-      fail: function(error) {
-        console.error('取消屏幕常亮失败:', error);
-      }
-    });
-
-    this.initTimer();
-  },
-  
-  updateTimerDisplay: function() {
-    const minutes = Math.floor(this.data.timeLeft / 60);
-    const seconds = this.data.timeLeft % 60;
-    
-    this.setData({
-      timerText: (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds
-    });
-  },
-  
-  drawProgressRing: function() {
-    const query = wx.createSelectorQuery();
-    var self = this;
-    query.select('#progressRing')
-      .fields({ node: true, size: true })
-      .exec(function(res) {
-        // 如果不是环形样式，不执行绘制
-        if (self.data.timerStyle !== 'circle' || !res[0]) return;
-        
-        const canvas = res[0].node;
-        const ctx = canvas.getContext('2d');
-        
-        // 设置canvas尺寸
-        const systemInfo = wx.getWindowInfo();
-        const dpr = systemInfo.pixelRatio;
-        canvas.width = res[0].width * dpr;
-        canvas.height = res[0].height * dpr;
-        ctx.scale(dpr, dpr);
-        
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 绘制进度环
-        const centerX = res[0].width / 2;
-        const centerY = res[0].height / 2;
-        const radius = res[0].width * 0.45;
-        
-        // 计算进度
-        const progress = (self.data.totalTime - self.data.timeLeft) / self.data.totalTime;
-        const startAngle = -0.5 * Math.PI; // 从顶部开始
-        const endAngle = startAngle + (2 * Math.PI * progress);
-
-        // 绘制圆环底色
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#f0f0f0';
-        ctx.lineWidth = 12;
-        ctx.stroke();
-
-        // 绘制进度弧
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-        ctx.strokeStyle = self.data.themeColor;
-        ctx.lineWidth = 12;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-      });
-  },
-  
-  drawProgressLine: function() {
-    const query = wx.createSelectorQuery();
-    var self = this;
-    query.select('#progressLine')
-      .fields({ node: true, size: true })
-      .exec(function(res) {
-        // 如果不是直线样式或未找到元素，不执行绘制
-        if (self.data.timerStyle !== 'line' || !res[0]) return;
-        
-        const canvas = res[0].node;
-        const ctx = canvas.getContext('2d');
-        
-        // 设置canvas尺寸
-        const systemInfo = wx.getWindowInfo();
-        const dpr = systemInfo.pixelRatio;
-        canvas.width = res[0].width * dpr;
-        canvas.height = res[0].height * dpr;
-        ctx.scale(dpr, dpr);
-        
-        // 清空画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // 设置线条属性
-        const width = res[0].width;
-        const height = res[0].height;
-        const lineHeight = 10; // 线条高度
-        const y = height / 2 - lineHeight / 2; // 线条Y轴位置
-        
-        // 计算进度
-        const progress = (self.data.totalTime - self.data.timeLeft) / self.data.totalTime;
-        const progressWidth = width * progress;
-
-        // 绘制背景线
-        ctx.beginPath();
-        ctx.rect(0, y, width, lineHeight);
-        ctx.fillStyle = '#f0f0f0';
-        ctx.fill();
-
-        // 绘制进度线
-        ctx.beginPath();
-        ctx.rect(0, y, progressWidth, lineHeight);
-        ctx.fillStyle = self.data.themeColor;
-        ctx.fill();
-      });
+    this.timerManager.toggleTimer();
   },
   
   switchMode: function(e) {
@@ -497,50 +239,12 @@ Page({
       currentMode: mode
     });
     
-    clearInterval(this.timer);
-    this.initTimer();
+    clearInterval(this.timerManager.timer);
+    this.timerManager.initTimer();
   },
   
   updateTaskProgress: function() {
-    if (!this.data.currentTask) return;
-
-    const tasks = wx.getStorageSync('tasks') || [];
-    const updatedTasks = tasks.map(function(task) {
-      if (task.id === this.data.currentTask.id) {
-        const completedCount = task.completedCount + 1;
-        const completed = completedCount >= task.totalCount;
-        return Object.assign({}, task, {
-          completedCount: completedCount,
-          completed: completed
-        });
-      }
-      return task;
-    });
-
-    wx.setStorageSync('tasks', updatedTasks);
-    
-    // 更新全局状态和当前页面状态
-    const updatedTask = updatedTasks.find(function(task) { return task.id === this.data.currentTask.id; }.bind(this));
-    app.globalData.currentTask = updatedTask;
-    this.setData({
-      currentTask: updatedTask
-    });
-
-    // 如果任务已完成，显示提示
-    if (updatedTask.completed) {
-      wx.showToast({
-        title: '任务已完成！',
-        icon: 'success'
-      });
-      // 清除当前任务
-      var self = this;
-      setTimeout(function() {
-        app.globalData.currentTask = null;
-        self.setData({
-          currentTask: null
-        });
-      }, 2000);
-    }
+    this.taskManager.updateTaskProgress();
   },
   
   updateCompletedCount: function() {
@@ -609,141 +313,27 @@ Page({
   updateStats: function() {
     const todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
     const weekStats = wx.getStorageSync('weekStats') || { completed: 0 };
-    
     this.setData({
       todayCompleted: todayStats.completed,
-      todayFocusTime: todayStats.focusTime.toFixed(1) + 'h',
+      todayFocusTime: (todayStats.focusTime / 3600).toFixed(1) + 'h',
       weekCompleted: weekStats.completed
     });
   },
-  
 
-
-  updateThemeColor: function(color) {
-    // 更新CSS变量
-    wx.getSystemInfo({
-      success: function() {
-        const page = this.selectComponent('.container');
-        if (page && page.setStyle) {
-          page.setStyle({
-            '--theme-color': color
-          });
-        } else {
-          // 如果无法直接设置组件样式，则更新页面根节点
-          const pages = getCurrentPages();
-          const currentPage = pages[pages.length - 1];
-          if (currentPage) {
-            const pageEl = currentPage.selectComponent('.container');
-            if (pageEl) {
-              pageEl.setStyle({
-                '--theme-color': color
-              });
-            }
-          }
-        }
-      }
+  updateThemeColor: function() {
+    const themeColor = wx.getStorageSync('themeColor') || '#009999';
+    this.setData({
+      themeColor: themeColor
     });
+    wx.setNavigationBarColor({
+      frontColor: '#ffffff',
+      backgroundColor: themeColor
+    });
+    this.drawProgressRing(); // 主题色变化时重绘进度环
   },
 
-  // 音效和震动功能
-  playButtonSound: function() {
-    try {
-      // 使用轻微震动作为按钮反馈
-      wx.vibrateShort && wx.vibrateShort({
-        type: 'light'
-      });
-    } catch (e) {
-      console.log('按钮反馈失败:', e);
-    }
-  },
-
-
-
-  vibrate: function() {
-    // 检查是否开启震动
-    const vibrateEnabled = wx.getStorageSync('vibrateEnabled');
-    if (vibrateEnabled === false) return;
-
-    try {
-      // 长震动提醒
-      wx.vibrateLong && wx.vibrateLong({
-        success: function() {
-          console.log('震动提醒成功');
-        },
-        fail: function() {
-          console.log('震动提醒失败');
-        }
-      });
-    } catch (e) {
-      console.log('震动功能不可用:', e);
-    }
-  },
-
-  // 背景音效管理
-  initBackgroundSound: function() {
-    const backgroundSound = wx.getStorageSync('backgroundSound') || 'none';
-    const soundVolume = wx.getStorageSync('soundVolume') || 50;
-
-    this.backgroundSoundId = backgroundSound;
-    this.soundVolume = soundVolume / 100;
-  },
-
-  startBackgroundSound: function() {
-    if (this.backgroundSoundId === 'none') return;
-
-    try {
-      // 创建背景音频上下文
-      if (!this.backgroundAudio) {
-        this.backgroundAudio = wx.createInnerAudioContext();
-        this.backgroundAudio.loop = true;
-        this.backgroundAudio.volume = this.soundVolume;
-
-        // 这里可以设置不同音效的音频文件路径
-        // 由于小程序限制，我们使用模拟的方式
-        this.backgroundAudio.src = this.getSoundUrl(this.backgroundSoundId);
-      }
-
-      this.backgroundAudio.play();
-      console.log('开始播放背景音效:', this.backgroundSoundId);
-
-    } catch (e) {
-      console.log('背景音效播放失败:', e);
-    }
-  },
-
-  pauseBackgroundSound: function() {
-    if (this.backgroundAudio) {
-      this.backgroundAudio.pause();
-    }
-  },
-
-  stopBackgroundSound: function() {
-    if (this.backgroundAudio) {
-      this.backgroundAudio.stop();
-      this.backgroundAudio.destroy();
-      this.backgroundAudio = null;
-    }
-  },
-
-  getSoundUrl: function(soundId) {
-    // 这里返回对应音效的URL
-    // 在实际应用中，可以将音频文件放在云存储或CDN上
-    const soundUrls = {
-      'rain': '/audio/rain.mp3',
-      'ocean': '/audio/ocean.mp3',
-      'forest': '/audio/forest.mp3',
-      'cafe': '/audio/cafe.mp3',
-      'fireplace': '/audio/fireplace.mp3',
-      'whitenoise': '/audio/whitenoise.mp3',
-      'pinknoise': '/audio/pinknoise.mp3'
-    };
-
-    return soundUrls[soundId] || '';
-  },
-
-  // 经验值系统
-  updateExperience: function() {
-    if (this.data.currentMode !== 'focus') return;
+  updateExperience: function(isPerfectFocus) {
+    const currentLevel = wx.getStorageSync('userLevel') || 1;
 
     // 计算获得的经验值
     const focusDuration = this.data.focusDuration;
