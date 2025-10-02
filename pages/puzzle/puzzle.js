@@ -368,7 +368,20 @@ Page({
       return;
     }
 
+    if (!this.data.isGameActive) {
+      wx.showToast({
+        title: '游戏已暂停',
+        icon: 'none'
+      });
+      return;
+    }
+
     vibrate.buttonTap();
+
+    wx.showLoading({
+      title: '计算中...',
+      mask: true
+    });
 
     this.setData({ isShowingHint: true });
 
@@ -378,7 +391,9 @@ Page({
         // 计算最优下一步
         const hint = this.calculateBestMove();
 
-        if (hint) {
+        wx.hideLoading();
+
+        if (hint && hint.move) {
           this.setData({
             currentHint: hint,
             showHint: true,
@@ -386,93 +401,202 @@ Page({
             hintsUsed: this.data.hintsUsed + 1,
             hintUsed: true
           });
+          
+          console.log('提示计算成功:', hint);
         } else {
-          // 这种情况现在应该不会发生，因为我们总是返回一个提示
           this.setData({ isShowingHint: false });
           wx.showToast({
-            title: '无法计算提示',
-            icon: 'none'
+            title: hint ? hint.message : '无法计算提示',
+            icon: 'none',
+            duration: 2000
           });
         }
       } catch (error) {
         console.error('计算提示失败:', error);
+        wx.hideLoading();
         this.setData({ isShowingHint: false });
         wx.showToast({
-          title: '提示计算失败',
-          icon: 'none'
+          title: '计算失败: ' + error.message,
+          icon: 'none',
+          duration: 2000
         });
       }
     }, 100);
   },
 
-  // 计算最优移动 - 重新设计的简化版本
+  // 计算最优移动 - 改进的算法
   calculateBestMove: function() {
-    const currentGrid = this.data.puzzleGrid;
-    const size = this.data.puzzleSize;
-    const emptyPos = this.data.emptyPosition;
+    try {
+      const currentGrid = JSON.parse(JSON.stringify(this.data.puzzleGrid));
+      const size = this.data.puzzleSize;
+      const emptyPos = { ...this.data.emptyPosition };
 
-    // 检查游戏是否已完成
-    if (this.checkWin()) {
-      return {
-        message: '🎉 恭喜！拼图已完成！',
-        detail: '所有数字都已归位',
-        move: null,
-        canApply: false
-      };
-    }
+      console.log('开始计算提示，当前棋盘:', currentGrid);
+      console.log('空格位置:', emptyPos);
 
-    // 获取所有可能的移动
-    const possibleMoves = this.getPossibleMoves(emptyPos, size);
-
-    if (possibleMoves.length === 0) {
-      return {
-        message: '无可用移动',
-        detail: '当前状态无法移动',
-        move: null,
-        canApply: false
-      };
-    }
-
-    // 使用简单但有效的策略：找到最需要归位的数字
-    let bestMove = null;
-    let bestPriority = -1;
-    let bestReason = '';
-
-    for (let move of possibleMoves) {
-      const tileValue = currentGrid[move.row][move.col];
-      const priority = this.calculateMovePriority(tileValue, move, size);
-      const reason = this.getSimpleMovementReason(tileValue, move, size);
-
-      if (priority > bestPriority) {
-        bestPriority = priority;
-        bestMove = move;
-        bestReason = reason;
+      // 检查游戏是否已完成
+      if (this.checkWin()) {
+        return {
+          message: '🎉 恭喜！拼图已完成！',
+          detail: '所有数字都已归位',
+          move: null,
+          canApply: false
+        };
       }
-    }
 
-    if (bestMove) {
-      const tileValue = currentGrid[bestMove.row][bestMove.col];
-      const direction = this.getMoveDirection(emptyPos, bestMove);
+      // 获取所有可能的移动
+      const possibleMoves = this.getPossibleMoves(emptyPos, size);
+      console.log('可能的移动:', possibleMoves);
+
+      if (possibleMoves.length === 0) {
+        console.error('没有可用的移动');
+        return {
+          message: '无可用移动',
+          detail: '当前状态无法移动',
+          move: null,
+          canApply: false
+        };
+      }
+
+      // 使用改进的策略评估每个移动
+      let bestMove = null;
+      let bestScore = -999999;
+      let bestReason = '';
+
+      for (let move of possibleMoves) {
+        const tileValue = currentGrid[move.row][move.col];
+        
+        // 计算综合评分
+        const score = this.evaluateMove(currentGrid, move, emptyPos, size);
+        const reason = this.getDetailedMovementReason(tileValue, move, size, currentGrid);
+
+        console.log(`移动 ${tileValue} (${move.row},${move.col}): 分数=${score}`);
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = move;
+          bestReason = reason;
+        }
+      }
+
+      if (bestMove) {
+        const tileValue = currentGrid[bestMove.row][bestMove.col];
+        const direction = this.getMoveDirection(emptyPos, bestMove);
+
+        console.log('最佳移动:', tileValue, direction, '原因:', bestReason);
+
+        return {
+          message: `💡 建议：移动数字 ${tileValue} ${direction}`,
+          detail: bestReason,
+          move: bestMove,
+          canApply: true
+        };
+      }
+
+      // 兜底
+      console.warn('使用兜底策略');
+      const fallbackMove = possibleMoves[0];
+      const tileValue = currentGrid[fallbackMove.row][fallbackMove.col];
+      const direction = this.getMoveDirection(emptyPos, fallbackMove);
 
       return {
         message: `建议移动数字 ${tileValue} ${direction}`,
-        detail: bestReason,
-        move: bestMove,
+        detail: '尝试这个移动看看',
+        move: fallbackMove,
         canApply: true
       };
+    } catch (error) {
+      console.error('calculateBestMove 错误:', error);
+      throw error;
+    }
+  },
+
+  // 综合评估移动
+  evaluateMove: function(grid, move, emptyPos, size) {
+    const tileValue = grid[move.row][move.col];
+    
+    // 计算目标位置
+    const targetRow = Math.floor((tileValue - 1) / size);
+    const targetCol = (tileValue - 1) % size;
+    
+    let score = 0;
+    
+    // 1. 如果能移动到正确位置，最高优先级
+    if (move.row === targetRow && move.col === targetCol) {
+      score += 10000;
+      console.log(`数字 ${tileValue} 可以移到正确位置!`);
+    }
+    
+    // 2. 距离目标位置的距离（越近越好）
+    const currentDist = Math.abs(move.row - targetRow) + Math.abs(move.col - targetCol);
+    score += (size * 2 - currentDist) * 100;
+    
+    // 3. 如果在正确的行或列，加分
+    if (move.row === targetRow) {
+      score += 500;
+    }
+    if (move.col === targetCol) {
+      score += 500;
+    }
+    
+    // 4. 优先处理小数字（通常更容易归位）
+    if (tileValue <= size * size / 2) {
+      score += 50;
+    }
+    
+    // 5. 检查是否会破坏已经正确的数字
+    const wouldBreakCorrect = this.wouldBreakCorrectTiles(grid, emptyPos, move, size);
+    if (wouldBreakCorrect) {
+      score -= 2000; // 重度惩罚
+    }
+    
+    return score;
+  },
+
+  // 检查移动是否会破坏已经正确的数字
+  wouldBreakCorrectTiles: function(grid, emptyPos, move, size) {
+    // 检查将要移动的数字当前是否在正确位置
+    const tileValue = grid[move.row][move.col];
+    const targetRow = Math.floor((tileValue - 1) / size);
+    const targetCol = (tileValue - 1) % size;
+    
+    // 如果这个数字当前就在正确位置，移动它会破坏
+    if (move.row === targetRow && move.col === targetCol) {
+      return true;
+    }
+    
+    return false;
+  },
+
+  // 获取详细的移动原因说明
+  getDetailedMovementReason: function(tileValue, move, size, grid) {
+    const targetRow = Math.floor((tileValue - 1) / size);
+    const targetCol = (tileValue - 1) % size;
+
+    // 如果能移到正确位置
+    if (move.row === targetRow && move.col === targetCol) {
+      return `✅ 数字 ${tileValue} 将移动到最终正确位置 (${targetRow + 1}, ${targetCol + 1})`;
     }
 
-    // 兜底：返回第一个可用移动
-    const fallbackMove = possibleMoves[0];
-    const tileValue = currentGrid[fallbackMove.row][fallbackMove.col];
-    const direction = this.getMoveDirection(emptyPos, fallbackMove);
+    // 如果在正确的行
+    if (move.row === targetRow) {
+      const colDiff = Math.abs(move.col - targetCol);
+      return `➡️ 数字 ${tileValue} 在正确的行，还需移动 ${colDiff} 格`;
+    }
 
-    return {
-      message: `建议移动数字 ${tileValue} ${direction}`,
-      detail: '尝试这个移动',
-      move: fallbackMove,
-      canApply: true
-    };
+    // 如果在正确的列
+    if (move.col === targetCol) {
+      const rowDiff = Math.abs(move.row - targetRow);
+      return `⬇️ 数字 ${tileValue} 在正确的列，还需移动 ${rowDiff} 格`;
+    }
+
+    // 计算距离
+    const distance = Math.abs(move.row - targetRow) + Math.abs(move.col - targetCol);
+    if (distance <= 2) {
+      return `🎯 数字 ${tileValue} 距离目标位置很近，继续这个方向`;
+    }
+
+    return `🔄 移动数字 ${tileValue} 以便为其他数字腾出空间`;
   },
 
   // 计算移动优先级 - 简化的评分系统

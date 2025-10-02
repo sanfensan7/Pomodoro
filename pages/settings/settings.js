@@ -365,6 +365,36 @@ Page({
       query: '',
       imageUrl: ''
     };
+  },
+
+  /**
+   * 跳转到目标设定页面
+   */
+  goToGoals: function() {
+    vibrate.buttonTap();
+    wx.navigateTo({
+      url: '/pages/goals/goals'
+    });
+  },
+
+  /**
+   * 跳转到学习日历页面
+   */
+  goToCalendar: function() {
+    vibrate.buttonTap();
+    wx.navigateTo({
+      url: '/pages/calendar/calendar'
+    });
+  },
+
+  /**
+   * 跳转到学习报告页面
+   */
+  goToReport: function() {
+    vibrate.buttonTap();
+    wx.navigateTo({
+      url: '/pages/report/report'
+    });
   }
 
 });

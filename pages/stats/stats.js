@@ -1,10 +1,14 @@
 var app = getApp();
 var shareHelper = require('../../utils/share-helper');
+const logger = require('../../utils/logger');
+const perfMonitor = require('../../utils/performance-monitor');
+const FocusStatsManager = require('../../utils/focus-stats-manager');
+const goalManager = require('../../utils/goal-manager');
 
 Page({
   data: {
     themeColor: '#ff6b6b',
-    period: 'day', // 'day', 'week', 'month'
+    period: 'day', // 'day', 'week', 'month', 'ranking'
     chartData: {
       labels: [],
       values: [],
@@ -15,10 +19,26 @@ Page({
       duration: '0 小时 0 分钟',
       average: '0 次',
       longest: '0 次'
-    }
+    },
+    
+    // 排行榜数据
+    myStats: {
+      weekMinutes: 0,
+      weekHours: 0,
+      totalMinutes: 0,
+      totalHours: 0,
+      consecutiveDays: 0,
+      weekSessions: 0,
+      rank: 0
+    },
+    rankingList: [],
+    rankingType: 'week', // week, total
+    loading: false,
+    weeklyData: []
   },
 
-  onLoad: function() {
+  onLoad: function(options) {
+    const tracker = perfMonitor.trackPageLoad('stats');
 
     try {
       // 启用分享功能
@@ -27,6 +47,9 @@ Page({
         menus: ['shareAppMessage', 'shareTimeline']
       });
 
+      // 初始化统计管理器
+      this.statsManager = new FocusStatsManager();
+
       // 获取全局主题色
       if (app.globalData.themeColor) {
         this.setData({
@@ -34,10 +57,19 @@ Page({
         });
       }
 
-      // 加载统计数据
-      this.fetchStatsData();
+      // 如果从其他页面跳转过来并指定了显示排行榜
+      if (options && options.tab === 'ranking') {
+        this.setData({ period: 'ranking' });
+        this.loadRankingData();
+      } else {
+        // 加载统计数据
+        this.fetchStatsData();
+      }
+      
+      tracker.end();
     } catch (error) {
-      console.error('统计页面加载失败:', error);
+      logger.error('统计页面加载失败:', error);
+      tracker.end({ error: true });
     }
   },
   
@@ -230,6 +262,9 @@ Page({
           statsData = this.getDayStats();
       }
 
+      // 加载目标完成率统计
+      this.loadGoalStats();
+
       // 确保数据完整性
       if (!statsData || !statsData.labels || !statsData.values || !statsData.summary) {
         console.error('统计数据不完整:', statsData);
@@ -283,7 +318,169 @@ Page({
     var period = e.currentTarget.dataset.period;
 
     this.setData({ period });
-    this.fetchStatsData();
+    
+    if (period === 'ranking') {
+      this.loadRankingData();
+    } else {
+      this.fetchStatsData();
+    }
+  },
+  
+  /**
+   * 加载排行榜相关数据
+   */
+  loadRankingData: function() {
+    try {
+      logger.log('加载排行榜数据');
+      
+      // 加载我的统计数据
+      this.loadMyStats();
+      
+      // 加载排行榜列表
+      this.loadRankingList();
+    } catch (error) {
+      logger.error('加载排行榜数据失败', error);
+    }
+  },
+  
+  /**
+   * 加载我的统计数据
+   */
+  loadMyStats: function() {
+    try {
+      if (!this.statsManager) {
+        this.statsManager = new FocusStatsManager();
+      }
+      
+      const stats = this.statsManager.getStats();
+      const weeklyData = this.statsManager.getWeeklyData();
+      
+      this.setData({
+        myStats: {
+          weekMinutes: stats.weekMinutes,
+          weekHours: stats.weekHours,
+          totalMinutes: stats.totalMinutes,
+          totalHours: stats.totalHours,
+          consecutiveDays: stats.consecutiveDays,
+          weekSessions: stats.weekSessions,
+          rank: 0 // 将在加载排行榜后更新
+        },
+        weeklyData: weeklyData
+      });
+      
+      logger.log('我的数据加载完成', stats);
+    } catch (error) {
+      logger.error('加载我的数据失败', error);
+    }
+  },
+  
+  /**
+   * 加载排行榜列表
+   */
+  loadRankingList: function() {
+    this.setData({ loading: true });
+    
+    try {
+      // 方式1: 使用云开发获取好友排行（需要配置）
+      // this.loadCloudRanking();
+      
+      // 方式2: 使用模拟数据（开发测试用）
+      this.loadMockRanking();
+      
+    } catch (error) {
+      logger.error('加载排行榜失败', error);
+      this.setData({ loading: false });
+    }
+  },
+  
+  /**
+   * 加载模拟排行数据（开发测试用）
+   */
+  loadMockRanking: function() {
+    // 生成默认头像（使用颜色背景 + emoji）
+    const defaultAvatars = [
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FF6B6B" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="50" text-anchor="middle" dominant-baseline="central" fill="white"%3E🥇%3C/text%3E%3C/svg%3E',
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%234ECDC4" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="50" text-anchor="middle" dominant-baseline="central" fill="white"%3E⭐%3C/text%3E%3C/svg%3E',
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%23FFD93D" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="50" text-anchor="middle" dominant-baseline="central" fill="white"%3E🐝%3C/text%3E%3C/svg%3E',
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%239B59B6" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="50" text-anchor="middle" dominant-baseline="central" fill="white"%3E🍅%3C/text%3E%3C/svg%3E',
+      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect fill="%2395A5A6" width="100" height="100"/%3E%3Ctext x="50" y="50" font-size="50" text-anchor="middle" dominant-baseline="central" fill="white"%3E👤%3C/text%3E%3C/svg%3E'
+    ];
+    
+    const mockData = [
+      {
+        rank: 1,
+        nickname: '专注达人',
+        avatarUrl: defaultAvatars[0],
+        weekMinutes: 1200,
+        weekHours: 20,
+        totalMinutes: 5000,
+        totalHours: 83.3
+      },
+      {
+        rank: 2,
+        nickname: '学习之星',
+        avatarUrl: defaultAvatars[1],
+        weekMinutes: 1050,
+        weekHours: 17.5,
+        totalMinutes: 4500,
+        totalHours: 75
+      },
+      {
+        rank: 3,
+        nickname: '努力小蜜蜂',
+        avatarUrl: defaultAvatars[2],
+        weekMinutes: 900,
+        weekHours: 15,
+        totalMinutes: 3800,
+        totalHours: 63.3
+      },
+      {
+        rank: 4,
+        nickname: '番茄爱好者',
+        avatarUrl: defaultAvatars[3],
+        weekMinutes: 750,
+        weekHours: 12.5,
+        totalMinutes: 3200,
+        totalHours: 53.3
+      },
+      {
+        rank: 5,
+        nickname: '你',
+        avatarUrl: defaultAvatars[4],
+        weekMinutes: this.data.myStats.weekMinutes,
+        weekHours: this.data.myStats.weekHours,
+        totalMinutes: this.data.myStats.totalMinutes,
+        totalHours: this.data.myStats.totalHours,
+        isMe: true
+      }
+    ];
+    
+    setTimeout(() => {
+      this.setData({
+        rankingList: mockData,
+        'myStats.rank': 5,
+        loading: false
+      });
+      
+      logger.log('模拟排行榜数据加载完成');
+    }, 500);
+  },
+  
+  /**
+   * 切换排行榜类型
+   */
+  switchRankingType: function(e) {
+    const type = e.currentTarget.dataset.type;
+    
+    if (type === this.data.rankingType) return;
+    
+    logger.log('切换排行榜类型', { type });
+    
+    this.setData({
+      rankingType: type
+    });
+    
+    this.loadRankingList();
   },
 
   // 分享给微信好友
@@ -294,6 +491,21 @@ Page({
   // 分享到朋友圈
   onShareTimeline: function() {
     return shareHelper.getShareTimelineConfig('total');
+  },
+
+  /**
+   * 加载目标完成率统计
+   */
+  loadGoalStats: function() {
+    try {
+      const goalStats = goalManager.getCompletionStats();
+      this.setData({
+        goalStats: goalStats
+      });
+      logger.log('目标完成率统计已加载', goalStats);
+    } catch (error) {
+      logger.error('加载目标完成率统计失败', error);
+    }
   }
 
 });

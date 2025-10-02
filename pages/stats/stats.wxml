@@ -18,9 +18,13 @@
     <view class="period-tab {{period === 'month' ? 'active' : ''}}" 
           style="{{period === 'month' ? 'background-color:' + themeColor : ''}}"
           data-period="month" bindtap="switchPeriod">月</view>
+    <view class="period-tab {{period === 'ranking' ? 'active' : ''}}" 
+          style="{{period === 'ranking' ? 'background-color:' + themeColor : ''}}"
+          data-period="ranking" bindtap="switchPeriod">排行榜</view>
   </view>
   
-  <view class="chart-container">
+  <!-- 统计图表 -->
+  <view class="chart-container" wx:if="{{period !== 'ranking'}}">
     <view class="chart">
       <view class="chart-bars">
         <block wx:for="{{chartData.labels}}" wx:key="index">
@@ -33,7 +37,29 @@
     </view>
   </view>
   
-  <view class="stats-summary">
+  <!-- 目标完成率统计 -->
+  <view class="goal-completion-stats card" wx:if="{{goalStats && period !== 'ranking'}}">
+    <view class="goal-stats-title">🎯 目标完成率</view>
+    <view class="goal-stats-grid">
+      <view class="goal-stat-item">
+        <view class="goal-stat-label">最近7天</view>
+        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.daily.last7Days.rate}}%</view>
+        <view class="goal-stat-desc">{{goalStats.daily.last7Days.achieved}}/{{goalStats.daily.last7Days.total}}</view>
+      </view>
+      <view class="goal-stat-item">
+        <view class="goal-stat-label">最近30天</view>
+        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.daily.last30Days.rate}}%</view>
+        <view class="goal-stat-desc">{{goalStats.daily.last30Days.achieved}}/{{goalStats.daily.last30Days.total}}</view>
+      </view>
+      <view class="goal-stat-item">
+        <view class="goal-stat-label">连续达成</view>
+        <view class="goal-stat-value" style="color: {{themeColor}}">{{goalStats.currentStreak}}</view>
+        <view class="goal-stat-desc">天</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="stats-summary" wx:if="{{period !== 'ranking'}}">
     <view class="summary-item">
       <view class="summary-label">
         <block wx:if="{{period === 'day'}}">今日专注次数：</block>
@@ -63,6 +89,124 @@
     <view class="summary-item">
       <view class="summary-label">最长连续专注：</view>
       <view class="summary-value" style="color: {{themeColor}}">{{currentStats.longest}}</view>
+    </view>
+  </view>
+
+  <!-- 排行榜内容 -->
+  <view class="ranking-container" wx:if="{{period === 'ranking'}}">
+    <!-- 模拟数据提示 -->
+    <view class="mock-data-banner">
+      <text class="banner-icon">ℹ️</text>
+      <view class="banner-content">
+        <text class="banner-title">当前为模拟数据</text>
+        <text class="banner-desc">暂未开通云开发，展示的是测试数据</text>
+      </view>
+    </view>
+
+    <!-- 我的数据卡片 -->
+    <view class="my-stats-card">
+      <view class="stats-header">
+        <view class="rank-badge">
+          <text class="rank-text">第{{myStats.rank || '--'}}名</text>
+        </view>
+      </view>
+      
+      <view class="stats-content">
+        <view class="stat-item">
+          <text class="stat-label">本周专注</text>
+          <text class="stat-value">{{myStats.weekHours}}小时</text>
+          <text class="stat-sub">{{myStats.weekSessions}}次</text>
+        </view>
+        
+        <view class="stat-divider"></view>
+        
+        <view class="stat-item">
+          <text class="stat-label">累计专注</text>
+          <text class="stat-value">{{myStats.totalHours}}小时</text>
+          <text class="stat-sub">{{myStats.consecutiveDays}}天连续</text>
+        </view>
+      </view>
+      
+      <!-- 本周每天数据 -->
+      <view class="weekly-chart">
+        <view class="chart-title">本周专注情况</view>
+        <view class="chart-bars-ranking">
+          <view class="bar-item" wx:for="{{weeklyData}}" wx:key="day">
+            <view class="bar-container">
+              <view class="bar-fill" 
+                    style="height: {{item.minutes > 0 ? (item.minutes / 180 * 100) : 5}}%; background-color: {{themeColor}}">
+              </view>
+            </view>
+            <text class="bar-label">{{item.day}}</text>
+            <text class="bar-value">{{item.hours}}h</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 排行榜类型切换 -->
+    <view class="ranking-tabs">
+      <view class="tab-item {{rankingType === 'week' ? 'active' : ''}}" 
+            bindtap="switchRankingType" 
+            data-type="week"
+            style="{{rankingType === 'week' ? 'background-color:' + themeColor : ''}}">
+        <text>本周排行</text>
+      </view>
+      <view class="tab-item {{rankingType === 'total' ? 'active' : ''}}" 
+            bindtap="switchRankingType" 
+            data-type="total"
+            style="{{rankingType === 'total' ? 'background-color:' + themeColor : ''}}">
+        <text>总排行</text>
+      </view>
+    </view>
+
+    <!-- 排行榜列表 -->
+    <view class="ranking-list" wx:if="{{!loading}}">
+      <view class="ranking-item {{item.isMe ? 'me' : ''}}" 
+            wx:for="{{rankingList}}" 
+            wx:key="rank">
+        <!-- 排名 -->
+        <view class="rank-number {{item.rank <= 3 ? 'top-' + item.rank : ''}}">
+          <text wx:if="{{item.rank <= 3}}">{{item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : '🥉'}}</text>
+          <text wx:else>{{item.rank}}</text>
+        </view>
+        
+        <!-- 头像和昵称 -->
+        <view class="user-info">
+          <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="nickname">{{item.nickname}}</text>
+          <text class="me-tag" wx:if="{{item.isMe}}">我</text>
+        </view>
+        
+        <!-- 数据 -->
+        <view class="user-stats">
+          <text class="main-stat">
+            {{rankingType === 'week' ? item.weekHours : item.totalHours}}小时
+          </text>
+          <text class="sub-stat">
+            {{rankingType === 'week' ? '本周' : '累计'}}
+          </text>
+        </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{rankingList.length === 0}}">
+        <view class="empty-icon">🏆</view>
+        <text class="empty-text">暂无排行数据</text>
+        <text class="empty-hint">邀请好友一起专注吧</text>
+      </view>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text>加载中...</text>
+    </view>
+
+    <!-- 说明 -->
+    <view class="ranking-notice">
+      <text class="notice-icon">💡</text>
+      <text class="notice-text">当前为模拟数据展示，暂未开通云开发功能。真实好友排行榜需配置微信云开发后方可使用。</text>
     </view>
   </view>
 </view> 

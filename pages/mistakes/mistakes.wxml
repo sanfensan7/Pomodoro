@@ -243,7 +243,7 @@
 
   <!-- 错题列表 -->
   <view class="mistakes-list" wx:if="{{!loading}}">
-    <view wx:if="{{filteredMistakes.length === 0}}" class="empty-state">
+    <view wx:if="{{displayMistakes.length === 0}}" class="empty-state">
       <view class="empty-icon">📝</view>
       <view class="empty-text">
         <block wx:if="{{currentFilter === 'all' && !searchKeyword}}">
@@ -257,7 +257,7 @@
       </view>
     </view>
 
-    <block wx:for="{{filteredMistakes}}" wx:key="id">
+    <block wx:for="{{displayMistakes}}" wx:key="id">
       <view class="mistake-card" bindtap="viewMistake" data-id="{{item.id}}">
         <!-- 错题头部 -->
         <view class="mistake-header">
@@ -310,6 +310,20 @@
         </view>
       </view>
     </block>
+    
+    <!-- 加载更多提示 -->
+    <view class="load-more" wx:if="{{displayMistakes.length > 0}}">
+      <view wx:if="{{loadingMore}}" class="loading-more">
+        <view class="loading-spinner-small"></view>
+        <text>加载中...</text>
+      </view>
+      <view wx:elif="{{hasMore}}" class="has-more">
+        <text>下拉查看更多</text>
+      </view>
+      <view wx:else class="no-more">
+        <text>— 已显示全部 {{displayMistakes.length}} 条 —</text>
+      </view>
+    </view>
   </view>
 
   <!-- 添加错题浮动按钮 -->

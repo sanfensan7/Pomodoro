@@ -1,0 +1,183 @@
+<view class="container">
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在生成报告...</text>
+  </view>
+
+  <!-- 报告内容 -->
+  <view class="report-content" wx:if="{{!loading && currentReport}}">
+    <!-- 报告头部 -->
+    <view class="report-header card">
+      <view class="header-top">
+        <view class="report-title">
+          <text class="title-icon">📊</text>
+          <text class="title-text">学习周报</text>
+        </view>
+        <view class="header-actions">
+          <text class="action-btn" bindtap="toggleHistory">历史</text>
+          <text class="action-btn" bindtap="regenerateReport">刷新</text>
+        </view>
+      </view>
+      <view class="week-info">
+        <text class="week-range">{{formatDate(currentReport.weekRange.start)}} - {{formatDate(currentReport.weekRange.end)}}</text>
+        <text class="week-number">第{{currentReport.weekRange.weekNumber}}周</text>
+      </view>
+    </view>
+
+    <!-- 核心统计 -->
+    <view class="stats-overview card">
+      <view class="stats-title">📈 本周数据</view>
+      <view class="stats-grid">
+        <view class="stat-card">
+          <view class="stat-icon">⏱️</view>
+          <view class="stat-value" style="color: {{themeColor}}">{{currentReport.stats.totalMinutes}}</view>
+          <view class="stat-label">专注分钟</view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-icon">🎯</view>
+          <view class="stat-value" style="color: {{themeColor}}">{{currentReport.stats.totalSessions}}</view>
+          <view class="stat-label">专注次数</view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-icon">✅</view>
+          <view class="stat-value" style="color: {{themeColor}}">{{currentReport.stats.completedTasks}}</view>
+          <view class="stat-label">完成任务</view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-icon">📅</view>
+          <view class="stat-value" style="color: {{themeColor}}">{{currentReport.stats.activeDays}}</view>
+          <view class="stat-label">活跃天数</view>
+        </view>
+      </view>
+      
+      <!-- 一致性指标 -->
+      <view class="consistency-indicator">
+        <view class="consistency-label">学习一致性</view>
+        <view class="consistency-bar">
+          <view class="consistency-fill" 
+                style="width: {{currentReport.stats.consistency}}%; background-color: {{themeColor}}">
+          </view>
+        </view>
+        <view class="consistency-value" style="color: {{themeColor}}">{{currentReport.stats.consistency}}%</view>
+      </view>
+    </view>
+
+    <!-- 每日分布 -->
+    <view class="daily-distribution card">
+      <view class="section-title">📊 每日分布</view>
+      <view class="daily-chart">
+        <view class="daily-item" 
+              wx:for="{{currentReport.stats.dailyStats}}" 
+              wx:for-item="dayData"
+              wx:key="date">
+          <view class="day-name">{{dayData.dayName}}</view>
+          <view class="day-bar">
+            <view class="day-fill" 
+                  style="height: {{dayData.minutes > 0 ? (dayData.minutes / currentReport.stats.bestDay.minutes * 100) : 0}}%; background-color: {{themeColor}}">
+            </view>
+          </view>
+          <view class="day-minutes">{{dayData.minutes}}分</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 成就展示 -->
+    <view class="achievements-section card" wx:if="{{currentReport.achievements.length > 0}}">
+      <view class="section-title">🏆 本周成就</view>
+      <view class="achievements-list">
+        <view class="achievement-item" 
+              wx:for="{{currentReport.achievements}}" 
+              wx:key="title">
+          <view class="achievement-icon">{{item.icon}}</view>
+          <view class="achievement-content">
+            <view class="achievement-title">{{item.title}}</view>
+            <view class="achievement-desc">{{item.description}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 学习洞察 -->
+    <view class="insights-section card" wx:if="{{currentReport.insights.length > 0}}">
+      <view class="section-title">💡 学习洞察</view>
+      <view class="insights-list">
+        <view class="insight-item {{item.type}}" 
+              wx:for="{{currentReport.insights}}" 
+              wx:key="title">
+          <view class="insight-indicator"></view>
+          <view class="insight-content">
+            <view class="insight-title">{{item.title}}</view>
+            <view class="insight-text">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 改进建议 -->
+    <view class="recommendations-section card" wx:if="{{currentReport.recommendations.length > 0}}">
+      <view class="section-title">🌟 改进建议</view>
+      <view class="recommendations-list">
+        <view class="recommendation-item" 
+              wx:for="{{currentReport.recommendations}}" 
+              wx:key="title">
+          <view class="recommendation-icon">{{item.icon}}</view>
+          <view class="recommendation-content">
+            <view class="recommendation-title">{{item.title}}</view>
+            <view class="recommendation-text">{{item.content}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分享按钮 -->
+    <view class="share-section">
+      <button class="share-btn" 
+              style="background-color: {{themeColor}}" 
+              bindtap="shareReport">
+        <text class="share-icon">📤</text>
+        <text class="share-text">生成分享海报</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 历史报告弹窗 -->
+  <view class="history-overlay {{showHistory ? 'show' : ''}}" wx:if="{{showHistory}}" bindtap="toggleHistory">
+    <view class="history-panel" catchtap="doNothing">
+      <view class="history-header">
+        <text class="history-title">历史报告</text>
+        <text class="history-close" bindtap="toggleHistory">✕</text>
+      </view>
+      <scroll-view class="history-list" scroll-y>
+        <view class="history-item" 
+              wx:for="{{historyReports}}" 
+              wx:key="id"
+              data-report-id="{{item.id}}"
+              bindtap="selectHistoryReport">
+          <view class="history-date">{{formatDate(item.weekRange.start)}} - {{formatDate(item.weekRange.end)}}</view>
+          <view class="history-stats">
+            <text class="history-stat">{{item.stats.totalMinutes}}分钟</text>
+            <text class="history-stat">{{item.stats.activeDays}}天</text>
+          </view>
+        </view>
+        <view class="history-empty" wx:if="{{historyReports.length === 0}}">
+          <text>暂无历史报告</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 隐藏的画布用于生成分享图片 -->
+  <canvas type="2d" id="shareCanvas" class="share-canvas"></canvas>
+</view>
+
+<wxs module="utils">
+  var formatDate = function(dateStr) {
+    var date = getDate(dateStr);
+    return (date.getMonth() + 1) + '月' + date.getDate() + '日';
+  };
+  
+  module.exports = {
+    formatDate: formatDate
+  };
+</wxs>

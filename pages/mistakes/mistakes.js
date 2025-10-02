@@ -1,5 +1,8 @@
 const MistakeManager = require('../../utils/mistake-manager');
 const vibrate = require('../../utils/vibrate');
+const logger = require('../../utils/logger');
+const perfMonitor = require('../../utils/performance-monitor');
+const PaginationManager = require('../../utils/pagination-manager');
 const app = getApp();
 
 Page({
@@ -7,6 +10,7 @@ Page({
     themeColor: '#ff6b6b',
     mistakes: [],
     filteredMistakes: [],
+    displayMistakes: [],  // 当前显示的数据（分页后）
     subjects: [],
     currentFilter: 'all', // all, subject, mastery, review
     selectedSubject: '',
@@ -15,6 +19,10 @@ Page({
     showFilterMenu: false,
     stats: {},
     loading: false,
+
+    // 分页相关
+    hasMore: false,
+    loadingMore: false,
 
     // 热力图数据
     monthlyStats: [],
@@ -25,13 +33,22 @@ Page({
   },
 
   onLoad: function() {
+    const pageTracker = perfMonitor.trackPageLoad('mistakes');
+    
     try {
-      console.log('错题本页面加载中...');
+      logger.log('错题本页面加载中...');
 
       // 启用分享功能
       wx.showShareMenu({
         withShareTicket: true,
         menus: ['shareAppMessage', 'shareTimeline']
+      });
+
+      // 初始化分页管理器
+      this.paginationManager = new PaginationManager({
+        pageSize: 20,           // 每页20条
+        enableCache: true,      // 启用缓存
+        preloadNext: true       // 预加载下一页
       });
 
       this.mistakeManager = new MistakeManager();
@@ -44,12 +61,17 @@ Page({
       this.loadTheme();
       this.loadData();
       this.generateHeatmapData();
-      console.log('错题本页面加载完成');
+      
+      logger.log('错题本页面加载完成');
+      pageTracker.end();
     } catch (error) {
-      console.error('错题本页面加载失败:', error);
+      logger.error('错题本页面加载失败', error);
+      pageTracker.end({ error: true });
+      
       // 设置默认数据
       this.setData({
         mistakes: [],
+        displayMistakes: [],
         stats: {
           total: 0,
           needReview: 0,
@@ -59,7 +81,8 @@ Page({
         calendarDays: [],
         currentStreak: 0,
         maxStreak: 0,
-        heatmapSubtitle: '暂无数据'
+        heatmapSubtitle: '暂无数据',
+        hasMore: false
       });
     }
   },
@@ -94,27 +117,50 @@ Page({
   },
 
   loadData: function() {
+    const tracker = perfMonitor.trackDataLoad('mistakes-load');
     this.setData({ loading: true });
 
-    const mistakes = this.mistakeManager.getAllMistakes();
-    const subjects = this.mistakeManager.getSubjects();
-    const stats = this.mistakeManager.getStats();
+    try {
+      const mistakes = this.mistakeManager.getAllMistakes();
+      const subjects = this.mistakeManager.getSubjects();
+      const stats = this.mistakeManager.getStats();
 
-    // 为每个错题添加格式化的时间文本
-    const mistakesWithTimeText = mistakes.map(mistake => ({
-      ...mistake,
-      createTimeText: this.formatTime(mistake.createTime)
-    }));
+      // 为每个错题添加格式化的时间文本
+      const mistakesWithTimeText = mistakes.map(mistake => ({
+        ...mistake,
+        createTimeText: this.formatTime(mistake.createTime)
+      }));
 
-    this.setData({
-      mistakes: mistakesWithTimeText,
-      filteredMistakes: mistakesWithTimeText,
-      subjects,
-      stats,
-      loading: false
-    });
+      // 设置分页数据
+      this.paginationManager.setData(mistakesWithTimeText);
+      
+      // 加载第一页
+      const firstPage = this.paginationManager.getPage(1);
+      const paginationInfo = this.paginationManager.getInfo();
 
-    this.generateHeatmapData();
+      logger.log('错题数据加载完成', {
+        总数: mistakes.length,
+        当前显示: firstPage.length,
+        总页数: paginationInfo.totalPages
+      });
+
+      this.setData({
+        mistakes: mistakesWithTimeText,
+        filteredMistakes: mistakesWithTimeText,
+        displayMistakes: firstPage,
+        subjects,
+        stats,
+        loading: false,
+        hasMore: paginationInfo.hasMore
+      });
+
+      this.generateHeatmapData();
+      tracker.end({ count: mistakes.length });
+    } catch (error) {
+      logger.error('加载错题数据失败', error);
+      tracker.end({ error: true });
+      this.setData({ loading: false });
+    }
   },
 
   // 搜索功能
@@ -126,6 +172,7 @@ Page({
 
   // 筛选错题
   filterMistakes: function() {
+    const tracker = perfMonitor.trackDataLoad('mistakes-filter', this.data.mistakes.length);
     let filtered = [...this.data.mistakes];
     
     // 关键词搜索
@@ -154,7 +201,72 @@ Page({
         break;
     }
 
-    this.setData({ filteredMistakes: filtered });
+    // 更新分页管理器
+    this.paginationManager.setData(filtered);
+    const firstPage = this.paginationManager.getPage(1);
+    const paginationInfo = this.paginationManager.getInfo();
+
+    logger.log('筛选完成', {
+      原始数量: this.data.mistakes.length,
+      筛选后数量: filtered.length,
+      当前显示: firstPage.length
+    });
+
+    this.setData({ 
+      filteredMistakes: filtered,
+      displayMistakes: firstPage,
+      hasMore: paginationInfo.hasMore
+    });
+
+    tracker.end({ filteredCount: filtered.length });
+  },
+  
+  // 加载更多数据
+  loadMore: function() {
+    if (!this.data.hasMore || this.data.loadingMore) {
+      return;
+    }
+
+    logger.log('加载更多错题...');
+    this.setData({ loadingMore: true });
+
+    try {
+      const result = this.paginationManager.loadNext();
+      
+      if (result && result.data.length > 0) {
+        // 追加数据
+        const displayMistakes = [...this.data.displayMistakes, ...result.data];
+        
+        this.setData({
+          displayMistakes: displayMistakes,
+          hasMore: result.hasMore,
+          loadingMore: false
+        });
+
+        logger.log('加载更多完成', {
+          新增数量: result.data.length,
+          当前总数: displayMistakes.length,
+          还有更多: result.hasMore
+        });
+      } else {
+        this.setData({
+          loadingMore: false,
+          hasMore: false
+        });
+        
+        logger.log('没有更多数据了');
+      }
+    } catch (error) {
+      logger.error('加载更多失败', error);
+      this.setData({
+        loadingMore: false
+      });
+    }
+  },
+  
+  // 触底加载更多
+  onReachBottom: function() {
+    this.loadMore();
   },
 
   // 显示/隐藏筛选菜单
@@ -575,7 +687,33 @@ Page({
       }
     }
 
-    return currentStreak;
+    // 计算最大连击：遍历所有日期找到最长连续天数
+    let tempStreak = 0;
+    let lastDate = null;
+    
+    studyDates.forEach(dateStr => {
+      const currentDate = new Date(dateStr);
+      
+      if (lastDate) {
+        const dayDiff = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+        if (dayDiff === 1) {
+          // 连续的一天
+          tempStreak++;
+        } else {
+          // 不连续，重新开始计算
+          maxStreak = Math.max(maxStreak, tempStreak);
+          tempStreak = 1;
+        }
+      } else {
+        tempStreak = 1;
+      }
+      
+      lastDate = currentDate;
+    });
+    
+    maxStreak = Math.max(maxStreak, tempStreak);
+
+    return { current: currentStreak, max: maxStreak };
   },
 
   // 日历日期点击事件

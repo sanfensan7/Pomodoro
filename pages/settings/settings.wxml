@@ -136,6 +136,30 @@
         </view>
       </view>
     </navigator>
+
+    <view class="settings-item clickable" bindtap="goToGoals">
+      <view class="item-label">
+        <text class="label-icon">🎯</text>
+        目标设定
+      </view>
+      <view class="arrow-right">></view>
+    </view>
+
+    <view class="settings-item clickable" bindtap="goToCalendar">
+      <view class="item-label">
+        <text class="label-icon">📅</text>
+        学习日历
+      </view>
+      <view class="arrow-right">></view>
+    </view>
+
+    <view class="settings-item clickable" bindtap="goToReport">
+      <view class="item-label">
+        <text class="label-icon">📊</text>
+        学习报告
+      </view>
+      <view class="arrow-right">></view>
+    </view>
   </view>
   
   <view class="settings-group">
@@ -216,10 +240,8 @@
 
     <view class="settings-item">
       <view class="item-label">版本</view>
-      <view class="item-value" style="color: {{themeColor}}">1.2.2</view>
+      <view class="item-value" style="color: {{themeColor}}">1.2.3</view>
     </view>
-
-
 
     <button class="feedback-btn" open-type="feedback">意见反馈</button>
   </view>

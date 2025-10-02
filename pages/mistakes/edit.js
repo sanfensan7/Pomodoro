@@ -1,5 +1,8 @@
 const MistakeManager = require('../../utils/mistake-manager');
 const vibrate = require('../../utils/vibrate');
+const logger = require('../../utils/logger');
+const perfMonitor = require('../../utils/performance-monitor');
+const imageCompressor = require('../../utils/image-compressor');
 
 Page({
   data: {
@@ -172,63 +175,83 @@ Page({
   },
 
   // 选择题目图片
-  chooseQuestionImage: function() {
+  chooseQuestionImage: async function() {
     vibrate.buttonTap();
+    const tracker = perfMonitor.trackImageLoad('question-image-upload');
 
-    const self = this;
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        const tempFilePath = res.tempFilePaths[0];
-        self.setData({
-          'formData.questionImage': tempFilePath
+    try {
+      logger.log('开始选择题目图片');
+      
+      // 使用图片压缩器选择并压缩图片
+      const result = await imageCompressor.chooseAndCompress({
+        count: 1,
+        sourceType: ['album', 'camera'],
+        ...imageCompressor.getRecommendedConfig('mistake')
+      });
+
+      if (result.tempFilePaths && result.tempFilePaths.length > 0) {
+        const compressedPath = result.tempFilePaths[0];
+        
+        this.setData({
+          'formData.questionImage': compressedPath
         });
 
+        logger.log('题目图片已添加并压缩');
         wx.showToast({
-          title: '题目图片已添加',
+          title: '图片已添加',
           icon: 'success'
         });
-      },
-      fail: function(err) {
-        console.error('选择题目图片失败:', err);
-        wx.showToast({
-          title: '选择图片失败',
-          icon: 'error'
-        });
+        
+        tracker.end({ success: true });
       }
-    });
+    } catch (err) {
+      logger.error('选择题目图片失败', err);
+      wx.showToast({
+        title: '选择图片失败',
+        icon: 'error'
+      });
+      tracker.end({ error: true });
+    }
   },
 
   // 选择答案图片
-  chooseAnswerImage: function() {
+  chooseAnswerImage: async function() {
     vibrate.buttonTap();
+    const tracker = perfMonitor.trackImageLoad('answer-image-upload');
 
-    const self = this;
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        const tempFilePath = res.tempFilePaths[0];
-        self.setData({
-          'formData.answerImage': tempFilePath
+    try {
+      logger.log('开始选择答案图片');
+      
+      // 使用图片压缩器选择并压缩图片
+      const result = await imageCompressor.chooseAndCompress({
+        count: 1,
+        sourceType: ['album', 'camera'],
+        ...imageCompressor.getRecommendedConfig('mistake')
+      });
+
+      if (result.tempFilePaths && result.tempFilePaths.length > 0) {
+        const compressedPath = result.tempFilePaths[0];
+        
+        this.setData({
+          'formData.answerImage': compressedPath
         });
 
+        logger.log('答案图片已添加并压缩');
         wx.showToast({
-          title: '答案图片已添加',
+          title: '图片已添加',
           icon: 'success'
         });
-      },
-      fail: function(err) {
-        console.error('选择答案图片失败:', err);
-        wx.showToast({
-          title: '选择图片失败',
-          icon: 'error'
-        });
+        
+        tracker.end({ success: true });
       }
-    });
+    } catch (err) {
+      logger.error('选择答案图片失败', err);
+      wx.showToast({
+        title: '选择图片失败',
+        icon: 'error'
+      });
+      tracker.end({ error: true });
+    }
   },
 
   // 删除题目图片

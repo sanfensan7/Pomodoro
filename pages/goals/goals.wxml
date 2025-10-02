@@ -1,0 +1,144 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-icon">🎯</view>
+    <view class="header-content">
+      <text class="header-title">设定你的目标</text>
+      <text class="header-subtitle">坚持每天一点点，成就更好的自己</text>
+    </view>
+  </view>
+
+  <!-- 每日目标 -->
+  <view class="goal-section">
+    <view class="section-header">
+      <view class="section-left">
+        <text class="section-icon">📅</text>
+        <text class="section-title">每日目标</text>
+      </view>
+      <switch checked="{{dailyGoal.enabled}}" 
+              bindchange="toggleDailyGoal"
+              color="{{themeColor}}" />
+    </view>
+
+    <view class="goal-content {{dailyGoal.enabled ? '' : 'disabled'}}">
+      <!-- 当前目标显示 -->
+      <view class="current-goal">
+        <text class="goal-number">{{dailyGoal.target}}</text>
+        <text class="goal-unit">分钟/天</text>
+      </view>
+
+      <!-- 预设选项 -->
+      <view class="presets">
+        <view class="presets-label">快速选择</view>
+        <view class="preset-buttons">
+          <view class="preset-btn {{dailyGoal.target === item ? 'active' : ''}}"
+                wx:for="{{dailyPresets}}"
+                wx:key="index"
+                data-value="{{item}}"
+                bindtap="selectDailyPreset"
+                style="{{dailyGoal.target === item ? 'background-color:' + themeColor + '; border-color:' + themeColor : ''}}">
+            {{item}}分
+          </view>
+        </view>
+      </view>
+
+      <!-- 自定义输入 -->
+      <view class="custom-input">
+        <view class="input-label">自定义目标（分钟）</view>
+        <view class="input-row">
+          <input class="custom-input-field"
+                 type="number"
+                 placeholder="输入自定义分钟数"
+                 value="{{customDaily}}"
+                 bindinput="onCustomDailyInput" />
+          <button class="confirm-btn"
+                  style="background-color:{{themeColor}}"
+                  bindtap="confirmCustomDaily">
+            确认
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 每周目标 -->
+  <view class="goal-section">
+    <view class="section-header">
+      <view class="section-left">
+        <text class="section-icon">📊</text>
+        <text class="section-title">每周目标</text>
+      </view>
+      <switch checked="{{weeklyGoal.enabled}}" 
+              bindchange="toggleWeeklyGoal"
+              color="{{themeColor}}" />
+    </view>
+
+    <view class="goal-content {{weeklyGoal.enabled ? '' : 'disabled'}}">
+      <!-- 当前目标显示 -->
+      <view class="current-goal">
+        <text class="goal-number">{{weeklyGoal.target}}</text>
+        <text class="goal-unit">分钟/周</text>
+      </view>
+
+      <!-- 预设选项 -->
+      <view class="presets">
+        <view class="presets-label">快速选择</view>
+        <view class="preset-buttons">
+          <view class="preset-btn {{weeklyGoal.target === item ? 'active' : ''}}"
+                wx:for="{{weeklyPresets}}"
+                wx:key="index"
+                data-value="{{item}}"
+                bindtap="selectWeeklyPreset"
+                style="{{weeklyGoal.target === item ? 'background-color:' + themeColor + '; border-color:' + themeColor : ''}}">
+            {{item}}分
+          </view>
+        </view>
+      </view>
+
+      <!-- 自定义输入 -->
+      <view class="custom-input">
+        <view class="input-label">自定义目标（分钟）</view>
+        <view class="input-row">
+          <input class="custom-input-field"
+                 type="number"
+                 placeholder="输入自定义分钟数"
+                 value="{{customWeekly}}"
+                 bindinput="onCustomWeeklyInput" />
+          <button class="confirm-btn"
+                  style="background-color:{{themeColor}}"
+                  bindtap="confirmCustomWeekly">
+            确认
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 目标建议 -->
+  <view class="tips-card">
+    <view class="tips-header">
+      <text class="tips-icon">💡</text>
+      <text class="tips-title">目标设定建议</text>
+    </view>
+    <view class="tips-content">
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">初学者：每日60-90分钟，每周300-420分钟</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">进阶者：每日120-150分钟，每周600-840分钟</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">高强度：每日180+分钟，每周1200+分钟</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-dot">•</text>
+        <text class="tip-text">建议循序渐进，避免一开始设定过高目标</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+

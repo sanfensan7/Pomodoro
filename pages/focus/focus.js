@@ -4,6 +4,8 @@ var shareHelper = require('../../utils/share-helper');
 var vibrate = require('../../utils/vibrate');
 const Task = require('../../utils/task.js');
 const Timer = require('../../utils/timer.js');
+const goalManager = require('../../utils/goal-manager');
+const FocusStatsManager = require('../../utils/focus-stats-manager');
 
 Page({
   data: {
@@ -17,7 +19,11 @@ Page({
     todayFocusTime: '0.0h',
     weekCompleted: 0,
     currentTask: null,
-    timerStyle: 'circle'
+    timerStyle: 'circle',
+    
+    // 目标进度
+    goalProgress: null,
+    showCelebration: false
   },
 
   onLoad: function() {
@@ -37,6 +43,7 @@ Page({
     // 初始化 Timer 管理器
     this.timerManager = new Timer(this);
     this.taskManager = new Task(this);
+    this.focusStatsManager = new FocusStatsManager();
 
     // 加载保存的设置
     this.loadSettings();
@@ -313,10 +320,38 @@ Page({
   updateStats: function() {
     const todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
     const weekStats = wx.getStorageSync('weekStats') || { completed: 0 };
+    
+    // 获取专注统计
+    if (!this.focusStatsManager) {
+      this.focusStatsManager = new FocusStatsManager();
+    }
+    const focusStats = this.focusStatsManager.getStats();
+    
+    // 获取目标进度
+    const goalProgress = goalManager.getProgress(focusStats);
+    
+    // 检查是否刚刚达成目标（触发庆祝动画）
+    const previousProgress = this.data.goalProgress;
+    if (previousProgress) {
+      // 检查每日目标
+      if (goalProgress.daily.enabled && 
+          !previousProgress.daily.achieved && 
+          goalProgress.daily.achieved) {
+        this.triggerCelebration('daily');
+      }
+      // 检查每周目标
+      if (goalProgress.weekly.enabled && 
+          !previousProgress.weekly.achieved && 
+          goalProgress.weekly.achieved) {
+        this.triggerCelebration('weekly');
+      }
+    }
+    
     this.setData({
       todayCompleted: todayStats.completed,
       todayFocusTime: (todayStats.focusTime / 3600).toFixed(1) + 'h',
-      weekCompleted: weekStats.completed
+      weekCompleted: weekStats.completed,
+      goalProgress: goalProgress
     });
   },
 
@@ -588,6 +623,44 @@ Page({
   // 分享到朋友圈
   onShareTimeline: function() {
     return shareHelper.getShareTimelineConfig('daily');
+  },
+
+  /**
+   * 触发庆祝动画
+   */
+  triggerCelebration: function(type) {
+    const message = type === 'daily' ? '🎉 恭喜达成今日目标！' : '🏆 恭喜完成本周目标！';
+    
+    this.setData({
+      showCelebration: true
+    });
+    
+    // 震动反馈
+    wx.vibrateShort();
+    
+    // 显示提示
+    wx.showToast({
+      title: message,
+      icon: 'success',
+      duration: 2000
+    });
+    
+    // 2秒后隐藏动画
+    setTimeout(() => {
+      this.setData({
+        showCelebration: false
+      });
+    }, 2000);
+  },
+
+  /**
+   * 跳转到目标设定页面
+   */
+  goToGoals: function() {
+    vibrate.buttonTap();
+    wx.navigateTo({
+      url: '/pages/goals/goals'
+    });
   }
 
 });

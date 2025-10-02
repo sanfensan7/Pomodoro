@@ -1,0 +1,134 @@
+<view class="container">
+  <!-- 月份切换器 -->
+  <view class="month-selector card">
+    <view class="selector-btn" bindtap="prevMonth">
+      <text class="arrow">◀</text>
+    </view>
+    <view class="month-display">
+      <text class="year">{{currentYear}}年</text>
+      <text class="month">{{currentMonth}}月</text>
+    </view>
+    <view class="selector-btn" bindtap="nextMonth">
+      <text class="arrow">▶</text>
+    </view>
+  </view>
+
+  <!-- 月统计卡片 -->
+  <view class="month-stats-card card">
+    <view class="stats-row">
+      <view class="stat-box">
+        <text class="stat-value" style="color: {{themeColor}}">{{monthStats.focusDays}}</text>
+        <text class="stat-label">专注天数</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value" style="color: {{themeColor}}">{{monthStats.totalMinutes}}</text>
+        <text class="stat-label">总分钟数</text>
+      </view>
+      <view class="stat-box">
+        <text class="stat-value" style="color: {{themeColor}}">{{monthStats.avgMinutes}}</text>
+        <text class="stat-label">平均分钟</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日历主体 -->
+  <view class="calendar-card card">
+    <view class="calendar-header">
+      <text class="calendar-title">📅 学习热力图</text>
+      <text class="today-btn" bindtap="goToToday">今天</text>
+    </view>
+
+    <!-- 星期标题 -->
+    <view class="week-days">
+      <view class="week-day" wx:for="{{weekDays}}" wx:key="index">{{item}}</view>
+    </view>
+
+    <!-- 日历格子 -->
+    <view class="calendar-grid">
+      <view class="calendar-cell {{item.isEmpty ? 'empty' : ''}} {{item.isToday ? 'today' : ''}}"
+            wx:for="{{calendar}}"
+            wx:key="index"
+            data-date-str="{{item.dateStr}}"
+            bindtap="onDateTap">
+        <view class="cell-content" wx:if="{{!item.isEmpty}}">
+          <view class="heatmap-block"
+                wx:for-item="heatItem"
+                wx:for="{{heatmapData}}"
+                wx:if="{{heatItem.date === item.dateStr}}"
+                wx:key="date"
+                style="background-color: {{getHeatmapColor(heatItem.minutes, maxMinutes)}}">
+          </view>
+          <text class="day-number">{{item.day}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 热力图图例 -->
+    <view class="heatmap-legend">
+      <text class="legend-label">专注强度：</text>
+      <view class="legend-colors">
+        <view class="legend-item">
+          <view class="legend-color" style="background-color: #f0f0f0"></view>
+          <text class="legend-text">0</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background-color: #ffcdd2"></view>
+          <text class="legend-text">低</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background-color: #ef9a9a"></view>
+          <text class="legend-text">中</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background-color: #e57373"></view>
+          <text class="legend-text">高</text>
+        </view>
+        <view class="legend-item">
+          <view class="legend-color" style="background-color: #f44336"></view>
+          <text class="legend-text">很高</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日期详情弹窗 -->
+  <view class="date-detail-overlay {{selectedDate ? 'show' : ''}}" wx:if="{{selectedDate}}" bindtap="closeDateDetail">
+    <view class="date-detail-card" catchtap="doNothing">
+      <view class="detail-header">
+        <text class="detail-date">{{selectedDate}}</text>
+        <text class="detail-close" bindtap="closeDateDetail">✕</text>
+      </view>
+      <view class="detail-content">
+        <view class="detail-stat">
+          <text class="detail-icon">⏱️</text>
+          <text class="detail-label">专注时长</text>
+          <text class="detail-value" style="color: {{themeColor}}">{{selectedDateStats.minutes}} 分钟</text>
+        </view>
+        <view class="detail-stat">
+          <text class="detail-icon">🎯</text>
+          <text class="detail-label">完成次数</text>
+          <text class="detail-value" style="color: {{themeColor}}">{{selectedDateStats.count}} 次</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<wxs module="utils">
+  var getHeatmapColor = function(minutes, maxMinutes) {
+    if (minutes === 0) return '#f0f0f0';
+    
+    var ratio = minutes / maxMinutes;
+    
+    if (ratio < 0.25) return '#ffcdd2';
+    if (ratio < 0.5) return '#ef9a9a';
+    if (ratio < 0.75) return '#e57373';
+    return '#f44336';
+  };
+  
+  module.exports = {
+    getHeatmapColor: getHeatmapColor
+  };
+</wxs>
+
+

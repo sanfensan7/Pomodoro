@@ -1,20 +1,22 @@
 /**app.wxss**/
 page {
   --theme-color: #ff6b6b;
+  --theme-color-rgb: 255, 107, 107;
   --theme-color-light: rgba(255, 107, 107, 0.1);
   --theme-color-medium: rgba(255, 107, 107, 0.3);
-  --background-color: #f8f9fa;
+  --background-color: #f5f7fa;
+  --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #e8edf2 100%);
   --card-background: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --border-color: #e9ecef;
-  --shadow-light: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  --shadow-medium: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  --shadow-heavy: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  --radius-small: 8rpx;
-  --radius-medium: 12rpx;
-  --radius-large: 20rpx;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --text-tertiary: #95a5a6;
+  --border-color: #f0f0f0;
+  --shadow-light: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  --shadow-heavy: 0 20rpx 60rpx rgba(0, 0, 0, 0.12);
+  --radius-small: 12rpx;
+  --radius-medium: 16rpx;
+  --radius-large: 24rpx;
 
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
   background-color: var(--background-color);
@@ -53,15 +55,15 @@ button::after {
 /* 卡片样式 */
 .card {
   background: var(--card-background);
-  border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-light);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-medium);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card:hover {
-  box-shadow: var(--shadow-medium);
-  transform: translateY(-2rpx);
+.card:active {
+  box-shadow: var(--shadow-light);
+  transform: scale(0.98);
 }
 
 /* 按钮基础样式 */
@@ -69,11 +71,11 @@ button::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24rpx 32rpx;
+  padding: 28rpx 40rpx;
   border-radius: var(--radius-medium);
   font-size: 28rpx;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border: none;
   outline: none;
@@ -82,19 +84,20 @@ button::after {
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--theme-color), rgba(255, 107, 107, 0.8));
+  background: linear-gradient(135deg, var(--theme-color) 0%, rgba(255, 107, 107, 0.8) 100%);
   color: white;
-  box-shadow: 0 4rpx 12rpx var(--theme-color-medium);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 107, 0.3);
 }
 
 .btn-secondary {
-  background: var(--card-background);
+  background: white;
   color: var(--text-primary);
   border: 2rpx solid var(--border-color);
+  box-shadow: var(--shadow-light);
 }
 
 .btn-ghost {
@@ -105,17 +108,18 @@ button::after {
 
 /* 输入框样式 */
 .input {
-  padding: 24rpx;
+  padding: 28rpx 24rpx;
   border: 2rpx solid var(--border-color);
   border-radius: var(--radius-medium);
   font-size: 28rpx;
-  background: var(--card-background);
-  transition: all 0.3s ease;
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .input:focus {
   border-color: var(--theme-color);
-  box-shadow: 0 0 0 6rpx var(--theme-color-light);
+  box-shadow: 0 0 0 8rpx rgba(255, 107, 107, 0.1), 0 4rpx 12rpx rgba(255, 107, 107, 0.15);
 }
 
 /* 文本样式 */
