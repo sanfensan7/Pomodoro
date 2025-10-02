@@ -4,7 +4,6 @@ var shareHelper = require('../../utils/share-helper');
 var vibrate = require('../../utils/vibrate');
 const Task = require('../../utils/task.js');
 const Timer = require('../../utils/timer.js');
-const goalManager = require('../../utils/goal-manager');
 const FocusStatsManager = require('../../utils/focus-stats-manager');
 
 Page({
@@ -21,8 +20,6 @@ Page({
     currentTask: null,
     timerStyle: 'circle',
     
-    // 目标进度
-    goalProgress: null,
     showCelebration: false
   },
 
@@ -321,37 +318,11 @@ Page({
     const todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
     const weekStats = wx.getStorageSync('weekStats') || { completed: 0 };
     
-    // 获取专注统计
-    if (!this.focusStatsManager) {
-      this.focusStatsManager = new FocusStatsManager();
-    }
-    const focusStats = this.focusStatsManager.getStats();
-    
-    // 获取目标进度
-    const goalProgress = goalManager.getProgress(focusStats);
-    
-    // 检查是否刚刚达成目标（触发庆祝动画）
-    const previousProgress = this.data.goalProgress;
-    if (previousProgress) {
-      // 检查每日目标
-      if (goalProgress.daily.enabled && 
-          !previousProgress.daily.achieved && 
-          goalProgress.daily.achieved) {
-        this.triggerCelebration('daily');
-      }
-      // 检查每周目标
-      if (goalProgress.weekly.enabled && 
-          !previousProgress.weekly.achieved && 
-          goalProgress.weekly.achieved) {
-        this.triggerCelebration('weekly');
-      }
-    }
     
     this.setData({
       todayCompleted: todayStats.completed,
       todayFocusTime: (todayStats.focusTime / 3600).toFixed(1) + 'h',
-      weekCompleted: weekStats.completed,
-      goalProgress: goalProgress
+      weekCompleted: weekStats.completed
     });
   },
 

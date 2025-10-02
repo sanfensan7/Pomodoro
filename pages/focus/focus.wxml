@@ -16,41 +16,6 @@
     <text class="status-text">{{isRunning ? '专注中' : (isPaused ? '已暂停' : '准备开始')}}</text>
   </view>
 
-  <!-- 目标进度卡片 -->
-  <view class="goal-progress-card card" wx:if="{{goalProgress}}" bindtap="goToGoals">
-    <view class="goal-header">
-      <text class="goal-title">📊 今日进度</text>
-      <text class="goal-setting-btn">设定 ></text>
-    </view>
-    
-    <!-- 每日目标 -->
-    <view class="goal-item" wx:if="{{goalProgress.daily.enabled}}">
-      <view class="goal-info">
-        <text class="goal-label">每日目标</text>
-        <text class="goal-numbers">{{goalProgress.daily.current}}/{{goalProgress.daily.target}}分钟</text>
-      </view>
-      <view class="goal-progress-bar">
-        <view class="goal-progress-fill {{goalProgress.daily.achieved ? 'achieved' : ''}}"
-              style="width: {{goalProgress.daily.percentage}}%; background-color: {{themeColor}}">
-        </view>
-      </view>
-      <text class="goal-percentage" style="color: {{themeColor}}">{{goalProgress.daily.percentage}}%</text>
-    </view>
-
-    <!-- 每周目标 -->
-    <view class="goal-item" wx:if="{{goalProgress.weekly.enabled}}">
-      <view class="goal-info">
-        <text class="goal-label">每周目标</text>
-        <text class="goal-numbers">{{goalProgress.weekly.current}}/{{goalProgress.weekly.target}}分钟</text>
-      </view>
-      <view class="goal-progress-bar">
-        <view class="goal-progress-fill {{goalProgress.weekly.achieved ? 'achieved' : ''}}"
-              style="width: {{goalProgress.weekly.percentage}}%; background-color: {{themeColor}}">
-        </view>
-      </view>
-      <text class="goal-percentage" style="color: {{themeColor}}">{{goalProgress.weekly.percentage}}%</text>
-    </view>
-  </view>
 
   <!-- 计时器主体 -->
   <view class="timer-container scale-in">
