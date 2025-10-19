@@ -1,13 +1,4 @@
 <view class="container" style="--theme-color: {{themeColor}}; --theme-color-rgb: {{themeColorRGB}};">
-  <view class="header">
-    <navigator url="/pages/settings/settings" open-type="navigateBack" hover-class="none">
-      <view class="back-icon">
-        <image src="/images/back.png" mode="aspectFit"></image>
-      </view>
-    </navigator>
-    <text class="title">成就系统</text>
-  </view>
-
   <!-- 用户等级信息 -->
   <view class="level-card">
     <view class="level-info">

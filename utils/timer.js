@@ -32,13 +32,9 @@ class Timer {
     
     this.updateTimerDisplay();
     
-    // 根据计时器样式选择适当的显示方法
+    // 延迟绘制进度
     setTimeout(() => {
-      if (this.page.data.timerStyle === 'circle') {
-        this.page.drawProgressRing();
-      } else if (this.page.data.timerStyle === 'line') {
-        this.page.drawProgressLine();
-      }
+      this.page.drawProgress && this.page.drawProgress();
     }, 50);
   }
 
@@ -54,6 +50,8 @@ class Timer {
     }
 
     var self = this;
+    let tickCount = 0; // 用于降低Canvas重绘频率
+    
     this.timer = setInterval(function() {
       if (self.page.data.timeLeft > 0) {
         self.page.setData({
@@ -61,14 +59,11 @@ class Timer {
         });
         self.updateTimerDisplay();
 
-        // 根据计时器样式更新进度显示
-        setTimeout(() => {
-          if (self.page.data.timerStyle === 'circle') {
-            self.page.drawProgressRing();
-          } else if (self.page.data.timerStyle === 'line') {
-            self.page.drawProgressLine();
-          }
-        }, 10);
+        // 降低Canvas重绘频率：每5秒重绘一次，而不是每秒
+        tickCount++;
+        if (tickCount % 5 === 0 && self.page.drawProgress) {
+          self.page.drawProgress();
+        }
       } else {
         clearInterval(self.timer);
         self.page.setData({ isRunning: false });
@@ -87,6 +82,13 @@ class Timer {
 
         // 计时结束，显示完成页面
         if (self.page.data.currentMode === 'focus') {
+          // 使用 FocusStatsManager 记录专注完成
+          if (self.page.focusStatsManager) {
+            self.page.focusStatsManager.recordFocusSession(
+              self.page.data.focusDuration,
+              self.page.data.currentTask ? self.page.data.currentTask.id : null
+            );
+          }
           // 如果有关联任务，更新任务进度
           if (self.page.data.currentTask && self.page.taskManager) {
             self.page.taskManager.updateTaskProgress();

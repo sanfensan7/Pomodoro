@@ -3,10 +3,14 @@
   <view class="header">
     <view class="header-title">{{isEdit ? '编辑错题' : '添加错题'}}</view>
     <view class="header-actions">
-      <button class="mode-switch-btn {{inputMode === 'image' ? 'active' : ''}}" bindtap="switchInputMode">
-        {{inputMode === 'image' ? '📷 图片模式' : '📝 文字模式'}}
+      <button class="action-btn mode-btn {{inputMode === 'text' ? 'active' : ''}}" bindtap="switchInputMode" data-mode="text">
+        <text class="btn-icon">📝</text>
+        <text class="btn-text">文字模式</text>
       </button>
-      <button class="reset-btn" bindtap="resetForm">重置</button>
+      <button class="action-btn mode-btn {{inputMode === 'image' ? 'active' : ''}}" bindtap="switchInputMode" data-mode="image">
+        <text class="btn-icon">📷</text>
+        <text class="btn-text">图片模式</text>
+      </button>
     </view>
   </view>
 

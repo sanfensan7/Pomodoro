@@ -53,9 +53,6 @@ Page({
 
       this.mistakeManager = new MistakeManager();
 
-      // 临时重置数据以测试新的示例数据
-      wx.removeStorageSync('mistakes_initialized');
-
       // 初始化错题本数据（仅在首次使用时）
       this.mistakeManager.initializeIfNeeded();
       this.loadTheme();

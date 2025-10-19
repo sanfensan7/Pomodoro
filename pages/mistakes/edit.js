@@ -161,14 +161,20 @@ Page({
   },
 
   // 切换输入模式
-  switchInputMode: function() {
+  switchInputMode: function(e) {
     vibrate.buttonTap();
 
-    const newMode = this.data.inputMode === 'text' ? 'image' : 'text';
-    this.setData({ inputMode: newMode });
+    const mode = e.currentTarget.dataset.mode;
+    
+    // 如果点击的是当前模式，不做任何操作
+    if (mode === this.data.inputMode) {
+      return;
+    }
+
+    this.setData({ inputMode: mode });
 
     wx.showToast({
-      title: newMode === 'image' ? '已切换到图片模式' : '已切换到文字模式',
+      title: mode === 'image' ? '已切换到图片模式' : '已切换到文字模式',
       icon: 'success',
       duration: 1500
     });

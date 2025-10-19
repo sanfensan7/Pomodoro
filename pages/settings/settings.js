@@ -305,15 +305,10 @@ Page({
     pages.forEach(page => {
       if (page.route === 'pages/focus/focus' && page.loadSettings) {
         page.setData({ themeColor: color });
-        // 重新绘制进度环以应用新主题色
-        if (page.drawProgressRing) {
+        // 重新绘制进度以应用新主题色
+        if (page.drawProgress) {
           setTimeout(() => {
-            page.drawProgressRing();
-          }, 100);
-        }
-        if (page.drawProgressLine) {
-          setTimeout(() => {
-            page.drawProgressLine();
+            page.drawProgress();
           }, 100);
         }
       }

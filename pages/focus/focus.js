@@ -5,6 +5,7 @@ var vibrate = require('../../utils/vibrate');
 const Task = require('../../utils/task.js');
 const Timer = require('../../utils/timer.js');
 const FocusStatsManager = require('../../utils/focus-stats-manager');
+const canvasHelper = require('../../utils/canvas-helper');
 
 Page({
   data: {
@@ -61,7 +62,7 @@ Page({
       this.setData({
         themeColor: app.globalData.themeColor
       });
-      this.drawProgressRing();
+      this.drawProgress();
     }
 
     // 如果有下一个模式设置，则切换
@@ -86,11 +87,7 @@ Page({
     } else {
       // 如果正在计时，也要更新进度显示以应用新样式
       setTimeout(() => {
-        if (this.data.timerStyle === 'circle') {
-          this.drawProgressRing();
-        } else if (this.data.timerStyle === 'line') {
-          this.drawProgressLine();
-        }
+        this.drawProgress();
       }, 100);
     }
 
@@ -136,65 +133,86 @@ Page({
 
 
   onReady: function() {
-    // 绘制初始进度环
-    this.drawProgressRing();
+    // 初始化Canvas
+    this.initCanvas();
   },
   
+  /**
+   * 初始化Canvas（使用新版Canvas 2D API）
+   */
+  initCanvas: async function() {
+    try {
+      // 根据计时器样式初始化对应的Canvas
+      if (this.data.timerStyle === 'circle') {
+        this.circleCanvas = await canvasHelper.getCanvas(this, '#progressRing');
+      } else if (this.data.timerStyle === 'line') {
+        this.lineCanvas = await canvasHelper.getCanvas(this, '#progressLine');
+      }
+      
+      // 绘制初始状态
+      this.drawProgress();
+    } catch (error) {
+      console.error('Canvas初始化失败:', error);
+    }
+  },
+  
+  /**
+   * 绘制进度（统一入口，节流优化）
+   */
+  drawProgress: function() {
+    // 节流：避免频繁重绘
+    if (this.drawTimer) {
+      return;
+    }
+    
+    this.drawTimer = setTimeout(() => {
+      this.drawTimer = null;
+      
+      if (this.data.timerStyle === 'circle') {
+        this.drawProgressRing();
+      } else if (this.data.timerStyle === 'line') {
+        this.drawProgressLine();
+      }
+    }, 100); // 100ms节流
+  },
+  
+  /**
+   * 绘制圆形进度条（使用Canvas 2D API）
+   */
   drawProgressRing: function() {
-    const ctx = wx.createCanvasContext('progressRing');
-    const width = 300;
-    const height = 300;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const radius = 120;
-    const lineWidth = 15;
+    if (!this.circleCanvas) {
+      return;
+    }
     
     // 计算进度
     const progress = 1 - (this.data.timeLeft / (this.data.totalTime || this.data.timeLeft));
     
-    // 绘制背景圆环
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.setStrokeStyle('#f0f0f0');
-    ctx.setLineWidth(lineWidth);
-    ctx.stroke();
-    
-    // 绘制进度圆环
-    if (progress > 0) {
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + progress * 2 * Math.PI);
-      ctx.setStrokeStyle(this.data.themeColor);
-      ctx.setLineWidth(lineWidth);
-      ctx.stroke();
-    }
-    
-    ctx.draw();
+    canvasHelper.drawCircularProgress(this.circleCanvas, {
+      progress: progress,
+      color: this.data.themeColor,
+      backgroundColor: '#f0f0f0',
+      lineWidth: 15,
+      showShadow: false
+    });
   },
   
+  /**
+   * 绘制线性进度条（使用Canvas 2D API）
+   */
   drawProgressLine: function() {
-    const ctx = wx.createCanvasContext('progressLine');
-    const width = 300;
-    const height = 10;
+    if (!this.lineCanvas) {
+      return;
+    }
     
     // 计算进度
     const progress = 1 - (this.data.timeLeft / (this.data.totalTime || this.data.timeLeft));
-    const progressWidth = progress * width;
     
-    // 绘制背景
-    ctx.beginPath();
-    ctx.rect(0, 0, width, height);
-    ctx.setFillStyle('#f0f0f0');
-    ctx.fill();
-    
-    // 绘制进度
-    if (progress > 0) {
-      ctx.beginPath();
-      ctx.rect(0, 0, progressWidth, height);
-      ctx.setFillStyle(this.data.themeColor);
-      ctx.fill();
-    }
-    
-    ctx.draw();
+    canvasHelper.drawLinearProgress(this.lineCanvas, {
+      progress: progress,
+      color: this.data.themeColor,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 5
+    });
   },
   
   loadSettings: function() {
@@ -217,14 +235,10 @@ Page({
     // 使用 timerManager 更新计时器显示
     this.timerManager.updateTimerDisplay();
 
-    // 如果计时器样式发生变化，重新绘制进度显示
+    // 如果计时器样式发生变化，重新初始化Canvas
     if (oldTimerStyle !== timerStyle) {
       setTimeout(() => {
-        if (timerStyle === 'circle') {
-          this.drawProgressRing();
-        } else if (timerStyle === 'line') {
-          this.drawProgressLine();
-        }
+        this.initCanvas();
       }, 100); // 延迟一点时间确保DOM更新完成
     }
   },
@@ -283,9 +297,9 @@ Page({
       };
     }
     
-    // 更新统计数据
+    // 更新统计数据（统一使用分钟作为时间单位）
     todayStats.completed += 1;
-    todayStats.focusTime += this.data.focusDuration / 60; // 小时为单位
+    todayStats.focusTime += this.data.focusDuration; // 分钟为单位
     
     const dayKey = todayString;
     weekStats.dailyStats[dayKey] = (weekStats.dailyStats[dayKey] || 0) + 1;
@@ -297,13 +311,13 @@ Page({
       allDayStats[dayKey] = {
         date: todayString,
         completed: 0,
-        focusTime: 0
+        focusTime: 0 // 分钟为单位
       };
     }
     
-    // 更新日期统计
+    // 更新日期统计（分钟为单位）
     allDayStats[dayKey].completed += 1;
-    allDayStats[dayKey].focusTime += this.data.focusDuration / 60;
+    allDayStats[dayKey].focusTime += this.data.focusDuration;
     
     // 保存统计数据
     wx.setStorageSync('todayStats', todayStats);
@@ -318,10 +332,14 @@ Page({
     const todayStats = wx.getStorageSync('todayStats') || { completed: 0, focusTime: 0 };
     const weekStats = wx.getStorageSync('weekStats') || { completed: 0 };
     
+    // focusTime 单位是分钟，转换为小时显示
+    const hours = Math.floor(todayStats.focusTime / 60);
+    const minutes = todayStats.focusTime % 60;
+    const timeDisplay = hours > 0 ? `${hours}.${Math.floor(minutes / 6)}h` : `${minutes}min`;
     
     this.setData({
       todayCompleted: todayStats.completed,
-      todayFocusTime: (todayStats.focusTime / 3600).toFixed(1) + 'h',
+      todayFocusTime: timeDisplay,
       weekCompleted: weekStats.completed
     });
   },
@@ -335,7 +353,7 @@ Page({
       frontColor: '#ffffff',
       backgroundColor: themeColor
     });
-    this.drawProgressRing(); // 主题色变化时重绘进度环
+    this.drawProgress(); // 主题色变化时重绘进度
   },
 
   updateExperience: function(isPerfectFocus) {
